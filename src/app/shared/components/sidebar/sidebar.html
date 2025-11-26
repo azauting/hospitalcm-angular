@@ -1,0 +1,103 @@
+<div class="w-64 bg-slate-800 text-white flex flex-col h-full">
+
+    <!-- HEADER -->
+    <div class="px-6 py-5 border-b border-slate-700">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+
+            <div>
+                <h1 class="text-lg font-bold text-white">Panel de</h1>
+                <p class="text-white font-bold text-md">
+                    {{ usuario?.nombre_rol | titlecase }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENÚ -->
+    <nav class="flex-1 px-4 py-6 space-y-2">
+
+        <!-- =========================== ADMIN =========================== -->
+        <ng-container *ngIf="usuario?.nombre_rol === 'administrador'">
+
+            <button (click)="goDashboard()" class="sidebar-btn" [class]="getNavButtonClass('/admin')">
+                Dashboard
+            </button>
+
+            <button (click)="goTicketsSinRevisar()" class="sidebar-btn"
+                [class]="getNavButtonClass('/admin/tickets/sin-revisar')">
+                Tickets sin revisar
+            </button>
+
+            <button (click)="goTicketsRevisados()" class="sidebar-btn"
+                [class]="getNavButtonClass('/admin/tickets/revisados')">
+                Tickets
+            </button>
+
+            <button (click)="goCrearTicket()" class="sidebar-btn" [class]="getNavButtonClass('/admin/crear-ticket')">
+                Crear Ticket
+            </button>
+
+            <button (click)="goTicketsInternos()" class="sidebar-btn"
+                [class]="getNavButtonClass('/admin/tickets/internos')">
+                Tickets Internos
+            </button>
+
+            <button (click)="goUsuarios()" class="sidebar-btn"
+                [class]="getNavButtonClass('/admin/usuarios')">
+                Usuarios
+            </button>
+
+        </ng-container>
+
+        <!-- =========================== SOPORTE =========================== -->
+        <ng-container *ngIf="usuario?.nombre_rol === 'soporte'">
+            <button (click)="goSoporteTickets()" class="sidebar-btn" [class]="getNavButtonClass('/soporte')">
+                Tickets
+            </button>
+            <button (click)="goSoporteMisTickets()" class="sidebar-btn"
+                [class]="getNavButtonClass('/soporte/mis-tickets')">
+                Mis Tickets
+            </button>
+            <button (click)="goSoporteCrearTicket()" class="sidebar-btn"
+                [class]="getNavButtonClass('/soporte/crear-ticket')">
+                Crear Ticket
+            </button>
+
+        </ng-container>
+
+    </nav>
+
+    <!-- FOOTER -->
+    <div class="px-4 py-4 border-t border-slate-700">
+        <div class="flex items-center gap-3 mb-3">
+            <div
+                class="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                {{ getInitials(usuario?.nombre_completo) }}
+            </div>
+
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-white truncate">
+                    {{ usuario.nombre_completo }}
+                </p>
+                <p class="text-slate-300 text-xs truncate">
+                    Rol: {{ usuario.nombre_rol }}
+                </p>
+                <p class="text-slate-300 text-xs truncate">
+                    Unidad: {{ usuario.unidad }}
+                </p>
+            </div>
+        </div>
+
+        <button (click)="cerrarSesion()"
+            class="w-full text-left px-3 py-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-900/20 transition flex items-center gap-2">
+            Cerrar sesión
+        </button>
+    </div>
+</div>

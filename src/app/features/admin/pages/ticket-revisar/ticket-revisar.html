@@ -1,0 +1,238 @@
+<div class="mx-auto max-w-4xl space-y-6">
+
+    <!-- LOADING -->
+    <div *ngIf="loading()" class="flex justify-center py-10">
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <p class="text-sm text-slate-500">Cargando ticket...</p>
+        </div>
+    </div>
+
+    <!-- ERROR -->
+    <div *ngIf="!loading() && errorMsg()" class="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+        {{ errorMsg() }}
+    </div>
+
+    <!-- SUCCESS -->
+    <div *ngIf="successMsg()" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-700">
+        {{ successMsg() }}
+    </div>
+
+    <!-- ======================================= -->
+    <!-- CONTENIDO DEL TICKET -->
+    <!-- ======================================= -->
+
+    <div *ngIf="ticket() as t" class="space-y-6">
+
+        <!-- HEADER -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-3">
+
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="font-semibold uppercase tracking-wide">Ticket #{{ t.ticket_id }}</span>
+                <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                <span>{{ t.fecha_creacion | date:'medium' }}</span>
+            </div>
+
+            <h1 class="text-xl font-bold text-slate-800">
+                {{ t.asunto }}
+            </h1>
+
+            <div class="flex flex-wrap gap-2">
+
+                <span
+                    class="px-2.5 py-1 rounded-full text-xs font-medium border bg-blue-50 text-blue-700 border-blue-200">
+                    {{ t.estado | titlecase }}
+                </span>
+
+                <span
+                    class="px-2.5 py-1 rounded-full text-xs font-medium border bg-amber-50 text-amber-700 border-amber-200">
+                    Prioridad: {{ t.prioridad | titlecase }}
+                </span>
+
+                <span
+                    class="px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">
+                    Unidad: {{ t.unidad || 'Sin unidad' }}
+                </span>
+
+            </div>
+
+        </div>
+
+        <!-- ======================================= -->
+        <!-- DESCRIPCIÓN -->
+        <!-- ======================================= -->
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+            <h2 class="text-sm font-semibold text-slate-900">Descripción del problema</h2>
+            <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed bg-slate-50 p-4 rounded-xl border">
+                {{ t.descripcion }}
+            </p>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SOLICITANTE -->
+        <!-- ======================================= -->
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+
+            <h2 class="text-sm font-semibold text-slate-900">Información del solicitante</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <p class="text-[11px] font-semibold text-slate-500 uppercase">Reportado por</p>
+                    <p class="font-medium text-slate-800">{{ t.autor_problema }}</p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <p class="text-[11px] font-semibold text-slate-500 uppercase">Teléfono</p>
+                    <p class="font-medium text-slate-800">{{ t.telefono }}</p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <p class="text-[11px] font-semibold text-slate-500 uppercase">Ubicación</p>
+                    <p class="font-medium text-slate-800">{{ t.ubicacion }}</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SOPORTE ASIGNADO -->
+        <!-- ======================================= -->
+
+        <div *ngIf="detalle()?.soporte_asignado"
+            class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+
+            <h2 class="text-sm font-semibold text-slate-900">Soporte asignado</h2>
+
+            <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+                <div
+                    class="w-10 h-10 rounded-full bg-indigo-200 text-indigo-700 font-semibold flex items-center justify-center">
+                    {{ getInicialSoporte() }}
+                </div>
+
+                <div class="flex-1">
+                    <p class="font-semibold text-slate-800">
+                        {{ detalle()?.soporte_nombre || 'Nombre no disponible' }}
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- ASIGNAR SOPORTE -->
+        <!-- ======================================= -->
+
+        <div *ngIf="!detalle()?.soporte_asignado"
+            class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+
+            <h2 class="text-sm font-semibold text-slate-900">Asignar soporte técnico</h2>
+
+            <div *ngIf="soportes().length === 0"
+                class="text-xs text-slate-500 bg-slate-50 p-4 rounded-lg border border-slate-200 text-center">
+                No hay soportes disponibles para esta unidad.
+            </div>
+
+            <div *ngIf="soportes().length > 0" class="space-y-3">
+
+                <div *ngFor="let s of soportes()"
+                    class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-2">
+
+                    <div>
+                        <p class="font-semibold text-slate-800">{{ s.nombre_completo }}</p>
+                        <p class="text-xs text-slate-500">{{ s.correo }}</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Unidad: {{ s.nombre_unidad || 'Sin unidad' }}</p>
+                    </div>
+
+                    <button (click)="asignarSoporte(s.usuario_id)"
+                        class="self-end px-3 py-1.5 rounded-md bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700">
+                        Asignar soporte
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- CONFIGURACIÓN DEL TICKET -->
+        <!-- ======================================= -->
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+
+            <h2 class="text-sm font-semibold text-slate-900">Configurar ticket</h2>
+
+            <!-- Selecciones -->
+            <div>
+                <label class="text-xs font-semibold text-slate-700 block mb-1">Unidad asignada</label>
+                <select [ngModel]="unidad_id()" (ngModelChange)="unidad_id.set($event)"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    <option [ngValue]="null">Seleccionar unidad...</option>
+                    <option [ngValue]="1">Soporte técnico</option>
+                    <option [ngValue]="2">Infraestructura</option>
+                    <option [ngValue]="3">Desarrollo</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-700 block mb-1">Nivel de prioridad</label>
+                <select [ngModel]="prioridad_id()" (ngModelChange)="prioridad_id.set($event)"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    <option [ngValue]="null">Seleccionar prioridad...</option>
+                    <option [ngValue]="1">Baja</option>
+                    <option [ngValue]="2">Media</option>
+                    <option [ngValue]="3">Alta</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-700 block mb-1">Estado del ticket</label>
+                <select [ngModel]="estado_id()" (ngModelChange)="estado_id.set($event)"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                    <option [ngValue]="null">Seleccionar estado...</option>
+                    <option [ngValue]="1">Abierto</option>
+                    <option [ngValue]="2">En proceso</option>
+                    <option [ngValue]="3">Resuelto</option>
+                    <option [ngValue]="4">Cerrado</option>
+                </select>
+            </div>
+
+            <!-- Botón Guardar -->
+            <button (click)="guardarCambios()" [disabled]="savingConfig()"
+                class="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+
+                <span *ngIf="savingConfig()" class="flex items-center gap-2">
+                    <div class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Guardando...
+                </span>
+
+                <span *ngIf="!savingConfig()">Guardar configuración</span>
+            </button>
+
+            <div *ngIf="successMsg()"
+                class="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg">
+                {{ successMsg() }}
+            </div>
+
+        </div>
+
+
+
+        <!-- ======================================= -->
+        <!-- FINALIZAR REVISIÓN -->
+        <!-- ======================================= -->
+
+        <div class="flex justify-end">
+            <button (click)="guardarRevision()"
+                class="px-5 py-2.5 rounded-full bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 shadow">
+                Finalizar revisión
+            </button>
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,57 @@
+<div class="w-64 bg-slate-800 text-white flex flex-col h-full">
+
+    <!-- Header -->
+    <header class="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+        <div>
+            <p class="text-xs font-semibold">
+                Movimientos recientes
+            </p>
+            <p class="text-[11px] text-slate-300" *ngIf="!loading()">
+                Últimas acciones en tickets
+            </p>
+            <p class="text-[11px] text-slate-300" *ngIf="loading()">
+                Cargando...
+            </p>
+        </div>
+    </header>
+
+    <!-- Error -->
+    <div *ngIf="errorMsg()" class="px-4 py-2">
+        <p class="text-[11px] text-red-300">
+            {{ errorMsg() }}
+        </p>
+    </div>
+
+    <!-- Lista de movimientos -->
+    <section class="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+        <p *ngIf="movimientos().length === 0 && !loading() && !errorMsg()" class="text-[11px] text-slate-300 px-1">
+            Aún no hay movimientos recientes.
+        </p>
+
+        <article *ngFor="let m of movimientos()"
+            class="relative bg-slate-700/70 border border-slate-600 rounded-lg px-3 py-2 text-xs shadow-sm">
+            <!-- Botón cerrar tarjeta -->
+            <button type="button" (click)="cerrarTarjeta(m.ticket_movimiento_id)"
+                class="absolute top-1 right-1 text-[10px] text-slate-300 hover:text-white">
+                ✕
+            </button>
+
+            <p class="text-[11px] font-semibold mb-1">
+                Ticket #{{ m.ticket_id }}
+            </p>
+
+            <p class="text-[11px]">
+                {{ formatoTipoMovimiento(m.tipo_movimiento) }}
+            </p>
+
+            <p class="text-[11px] text-slate-200 mt-1">
+                Por {{ m.nombre_completo }}
+            </p>
+
+            <p class="text-[10px] text-slate-300 mt-1">
+                {{ m.fecha | date:'short' }}
+            </p>
+        </article>
+    </section>
+
+</div>

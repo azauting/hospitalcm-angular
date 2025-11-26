@@ -1,0 +1,95 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 p-4">
+    <div class="w-full max-w-md bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+
+        <!-- HEADER -->
+        <div class="bg-blue-600 text-white p-6 text-center">
+            <div class="flex items-center justify-center mb-3">
+                <svg class="w-8 h-8 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16zM9 7h6m-6 4h6m-3 4h3" />
+                </svg>
+                <h1 class="text-xl font-bold">Hospital de Punta Arenas</h1>
+            </div>
+            <p class="text-blue-100 text-sm">Sistema de Soporte Técnico</p>
+        </div>
+
+        <div class="p-6">
+
+            <form (ngSubmit)="onSubmit()" class="space-y-5">
+
+                <!-- CORREO -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Correo Institucional</label>
+
+                    <div class="relative">
+                        <input type="email" [(ngModel)]="correo" name="correo" (input)="onInputChange()" required
+                            class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10 transition-all"
+                            placeholder="nombre@hospital.cl" />
+
+                        <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+
+                    <p class="text-xs text-slate-500 mt-1">Usa tu correo institucional del hospital</p>
+                </div>
+
+                <!-- CONTRASEÑA -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Contraseña</label>
+
+                    <div class="relative">
+                        <input type="password" [(ngModel)]="contrasena" name="contrasena" (input)="onInputChange()"
+                            required
+                            class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10 transition-all"
+                            placeholder="Ingresa tu contraseña" />
+
+                        <svg class="w-5 h-5 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- BOTÓN -->
+                <button type="submit" [disabled]="loading"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold shadow-md hover:bg-blue-700 disabled:opacity-60 transition-all">
+                    <div class="flex items-center justify-center">
+
+                        <!-- Loader -->
+                        <svg *ngIf="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none"
+                            viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3
+                7.938l3-2.647z">
+                            </path>
+                        </svg>
+
+                        {{ loading ? 'Verificando credenciales...' : 'Ingresar al Sistema' }}
+                    </div>
+                </button>
+            </form>
+
+            <!-- ERROR -->
+            <div *ngIf="errorMsg" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 
+              0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-red-700 text-sm font-medium">{{ errorMsg }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 text-center text-xs text-slate-500">
+            <p>Hospital de Punta Arenas © {{ currentYear }} - Sistema de Soporte Técnico</p>
+            <p class="mt-1">Punta Arenas, Región de Magallanes</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,189 @@
+<div class="p-6">
+
+    <!-- Mensajes -->
+    <p *ngIf="errorMsg()" class="text-red-600 text-sm mb-3">{{ errorMsg() }}</p>
+    <p *ngIf="successMsg()" class="text-green-600 text-sm mb-3">{{ successMsg() }}</p>
+
+    <!-- Loading -->
+    <p *ngIf="loading()" class="text-slate-500 text-sm">Cargando usuario...</p>
+    <!-- FILTROS -->
+    <div class="bg-white p-4 rounded-xl shadow mb-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Buscador -->
+        <div>
+            <label class="text-sm font-medium text-slate-700">Buscar</label>
+            <input type="text" class="w-full p-2 border rounded-lg mt-1" placeholder="Nombre o correo..."
+                (input)="filtroBusqueda.set($any($event.target).value)">
+        </div>
+
+        <!-- Filtro por Rol -->
+        <div>
+            <label class="text-sm font-medium text-slate-700">Rol</label>
+            <select class="w-full p-2 border rounded-lg mt-1" (change)="filtroRol.set($any($event.target).value)">
+                <option value="todos">Todos los roles</option>
+                <option value="1">Solicitante</option>
+                <option value="2">Soporte</option>
+                <option value="3">Administrador</option>
+            </select>
+        </div>
+
+        <!-- Filtro por Unidad -->
+        <div>
+            <label class="text-sm font-medium text-slate-700">Unidad</label>
+            <select class="w-full p-2 border rounded-lg mt-1" (change)="filtroUnidad.set($any($event.target).value)">
+                <option value="todos">Todas las unidades</option>
+                <option value="1">Soporte</option>
+                <option value="2">Infraestructura</option>
+                <option value="3">Desarrollo</option>
+                <option value="null">Sin unidad</option>
+            </select>
+        </div>
+
+    </div>
+    <!-- TABLA DE USUARIOS -->
+    <div class="bg-white shadow rounded-xl overflow-hidden">
+
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-100 border-b">
+                <tr>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">ID</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Nombre</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Correo</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Rol</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Unidad</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-700">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr *ngFor="let u of getPaginatedUsers()" class="border-b hover:bg-slate-50">
+                    <td class="px-4 py-3">{{ u.usuario_id }}</td>
+                    <td class="px-4 py-3 capitalize">{{ u.nombre_completo }}</td>
+                    <td class="px-4 py-3">{{ u.correo }}</td>
+                    <td class="px-4 py-3 capitalize">{{ u.nombre_rol || u.rol_id }}</td>
+                    <td class="px-4 py-3 capitalize">{{ u.nombre_unidad || u.unidad_id || 'No tiene unidad' }}</td>
+
+                    <td class="px-4 py-3 flex justify-center gap-2">
+
+                        <!-- Cambiar Rol -->
+                        <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            (click)="modalRol = u">
+                            Rol
+                        </button>
+
+                        <!-- Cambiar Unidad -->
+                        <button class="px-3 py-1 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                            (click)="modalUnidad = u">
+                            Unidad
+                        </button>
+
+                        <!-- Cambiar Contraseña -->
+                        <button class="px-3 py-1 text-xs bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+                            (click)="modalPassword = u">
+                            Contraseña
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINACIÓN -->
+    <div class="flex items-center justify-between mt-4">
+        <button class="px-3 py-2 bg-white border rounded-lg text-sm hover:bg-slate-100" [disabled]="currentPage === 1"
+            (click)="previousPage()">
+            ← Anterior
+        </button>
+
+        <p class="text-sm text-slate-600">
+            Página {{ currentPage }} de {{ totalPages }}
+        </p>
+
+        <button class="px-3 py-2 bg-white border rounded-lg text-sm hover:bg-slate-100"
+            [disabled]="currentPage === totalPages" (click)="nextPage()">
+            Siguiente →
+        </button>
+    </div>
+
+
+
+    <!-- ===================================================== -->
+    <!-- MODAL CAMBIAR ROL -->
+    <!-- ===================================================== -->
+    <div *ngIf="modalRol" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6 space-y-4">
+
+            <h2 class="text-lg font-bold mb-2">Cambiar rol a:</h2>
+            <p class="text-sm text-slate-600">{{ modalRol.nombre_completo }}</p>
+
+            <label class="block text-sm mb-1">Nuevo rol</label>
+            <select #rol class="w-full p-2 border rounded-lg">
+                <option value="1">Solicitante</option>
+                <option value="2">Soporte</option>
+                <option value="3">Administrador</option>
+            </select>
+
+            <div class="flex gap-2 justify-end mt-4">
+                <button class="px-3 py-2 bg-slate-200 rounded-lg" (click)="modalRol = null">Cancelar</button>
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    (click)="cambiarRol(modalRol.usuario_id, convertRol(rol.value)); modalRol = null">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- MODAL CAMBIAR UNIDAD -->
+    <!-- ===================================================== -->
+    <div *ngIf="modalUnidad"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6 space-y-4">
+
+            <h2 class="text-lg font-bold mb-2">Cambiar unidad a:</h2>
+            <p class="text-sm text-slate-600">{{ modalUnidad.nombre_completo }}</p>
+
+            <label class="block text-sm mb-1">Unidad</label>
+            <select #unidad class="w-full p-2 border rounded-lg">
+                <option value="null">Sin unidad</option>
+                <option value="1">Soporte</option>
+                <option value="2">Infraestructura</option>
+                <option value="3">Desarrollo</option>
+            </select>
+
+            <div class="flex gap-2 justify-end mt-4">
+                <button class="px-3 py-2 bg-slate-200 rounded-lg" (click)="modalUnidad = null">Cancelar</button>
+                <button class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                    (click)="cambiarUnidad(modalUnidad.usuario_id, convertUnidad(unidad.value)); modalUnidad = null">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- MODAL CAMBIAR CONTRASEÑA -->
+    <!-- ===================================================== -->
+    <div *ngIf="modalPassword"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6 space-y-4">
+
+            <h2 class="text-lg font-bold mb-2">Cambiar contraseña a:</h2>
+            <p class="text-sm text-slate-600">{{ modalPassword.nombre_completo }}</p>
+
+            <label class="block text-sm mb-1">Nueva contraseña</label>
+            <input #pass type="password" class="w-full p-2 border rounded-lg" placeholder="Nueva contraseña">
+
+            <div class="flex gap-2 justify-end mt-4">
+                <button class="px-3 py-2 bg-slate-200 rounded-lg" (click)="modalPassword = null">Cancelar</button>
+                <button class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+                    (click)="cambiarPassword(modalPassword.usuario_id, pass.value); modalPassword = null">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>

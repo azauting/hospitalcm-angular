@@ -1,0 +1,286 @@
+<div class="mx-auto space-y-4">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-amber-100 p-3 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">Tickets Pendientes</h1>
+                    <p class="text-slate-600 mt-1">
+                        {{ totalTickets }} tickets requieren revisión inmediata
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <p class="text-sm text-slate-500">Actualizado</p>
+                    <p class="text-sm font-medium text-slate-700">{{ fechaActual | date:'shortTime' }}</p>
+                </div>
+                <button type="button" (click)="cargarTickets()"
+                    class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors duration-200 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span class="text-sm font-medium">Actualizar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+            <!-- Buscador general -->
+            <div class="col-span-1 md:col-span-2">
+                <label class="text-xs text-slate-600 font-semibold mb-1 block">Buscar</label>
+                <input type="text" [(ngModel)]="filtroBusqueda"
+                    placeholder="Buscar por usuario, asunto, origen o evento..."
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Filtro Origen -->
+            <div>
+                <label class="text-xs text-slate-600 font-semibold mb-1 block">Origen</label>
+                <select [(ngModel)]="filtroOrigen"
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="todos">Todos</option>
+                    <option value="solicitante">Solicitante</option>
+                    <option value="soporte">Soporte</option>
+                    <option value="administrador">Administrador</option>
+                </select>
+            </div>
+
+            <!-- Filtro Evento -->
+            <div>
+                <label class="text-xs text-slate-600 font-semibold mb-1 block">Evento</label>
+                <select [(ngModel)]="filtroEvento"
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="todos">Todos</option>
+                    <option value="requerimiento">Requerimiento</option>
+                    <option value="incidencia">Incidencia</option>
+                    <option value="derivación">Derivación</option>
+                </select>
+            </div>
+
+        </div>
+
+        <!-- Fecha -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+
+            <div>
+                <label class="text-xs text-slate-600 font-semibold mb-1 block">Fecha desde</label>
+                <input type="date" [(ngModel)]="filtroFechaDesde"
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <label class="text-xs text-slate-600 font-semibold mb-1 block">Fecha hasta</label>
+                <input type="date" [(ngModel)]="filtroFechaHasta"
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Botón reset -->
+            <div class="col-span-2 flex items-end">
+                <button type="button" (click)="resetFiltros()"
+                    class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm text-slate-700 border border-slate-300">
+                    Limpiar filtros
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- Estados -->
+    <div class="flex justify-center py-12" *ngIf="loading()">
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin">
+            </div>
+            <p class="mt-3 text-sm text-slate-500">Cargando tickets pendientes...</p>
+        </div>
+    </div>
+
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4" *ngIf="!loading() && errorMsg()">
+        <div class="flex items-start">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0"
+                viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd" />
+            </svg>
+            <div>
+                <h3 class="text-sm font-medium text-red-800">Error al cargar tickets</h3>
+                <p class="text-sm text-red-700 mt-1">{{ errorMsg() }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sin tickets -->
+    <div class="text-center py-16" *ngIf="!loading() && !errorMsg() && tickets().length === 0">
+        <div class="max-w-md mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-300" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-slate-900">No hay tickets pendientes</h3>
+            <p class="mt-2 text-slate-500">
+                Todos los tickets han sido revisados. ¡Buen trabajo!
+            </p>
+        </div>
+    </div>
+
+    <!-- Información de paginación -->
+    <div class="flex items-center justify-between mb-4" *ngIf="!loading() && tickets().length > 0">
+        <p class="text-sm text-slate-600">
+            Mostrando
+            <span class="font-medium">{{ getStartIndex() + 1 }}</span> -
+            <span class="font-medium">{{ getEndIndex() }}</span> de
+            <span class="font-medium">{{ totalTickets }}</span> tickets
+        </p>
+
+        <!-- Selector de items por página -->
+        <div class="flex items-center gap-2">
+            <label for="itemsPerPage" class="text-sm text-slate-600">Tickets por página:</label>
+            <select id="itemsPerPage" [value]="itemsPerPage" (change)="onItemsPerPageChange($event)"
+                class="text-sm border border-slate-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Tabla de tickets -->
+    <div *ngIf="!loading() && tickets().length > 0"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-600">
+                    Tickets pendientes de revisión
+                </p>
+                <div class="flex items-center gap-4 text-xs text-slate-500">
+                    <span class="flex items-center gap-1">
+                        <span class="w-2 h-2 bg-amber-500 rounded-full"></span>
+                        Pendientes
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr class="text-left text-slate-600 text-sm font-semibold">
+                        <th class="px-6 py-4">Ticket ID</th>
+                        <th class="px-6">Usuario soliciante</th>
+                        <th class="px-6 py-4">Asunto</th>
+                        <th class="px-6 py4">Origen</th>
+                        <th class="px-6 py-4">Evento</th>
+                        <th class="px-6 py-4">Fecha</th>
+                        <th class="px-6 py-4 text-right">Acción</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    <tr *ngFor="let t of getPaginatedTickets()"
+                        class="hover:bg-slate-50 transition-colors duration-150 group">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-sm font-semibold text-slate-700">#{{ t.ticket_id
+                                    }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-slate-600">
+                                <p class="font-medium text-slate-800">{{ t.usuario_nombre | titlecase }}</p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="max-w-xs">
+                                <p
+                                    class="text-slate-800 font-medium line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                    {{ t.asunto | titlecase }}
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="max-w-xs">
+                                <p
+                                    class="text-slate-800 font-medium line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                    {{ t.origen | titlecase }}
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="max-w-xs">
+                                <p
+                                    class="text-slate-800 font-medium line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                    {{ t.evento | titlecase }}
+                                </p>
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-slate-600">
+                                <p>{{ t.fecha_creacion | date:'mediumDate' }}</p>
+                                <p class="text-slate-400 text-xs">{{ t.fecha_creacion | date:'shortTime' }}
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button type="button" (click)="verDetalle(t.ticket_id)"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium shadow-sm group-hover:shadow-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                Revisar
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Paginador -->
+    <div class="flex items-center justify-between border-t border-slate-200 pt-6"
+        *ngIf="!loading() && tickets().length > 0">
+        <button (click)="previousPage()" [disabled]="currentPage === 1"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Anterior
+        </button>
+
+        <!-- Números de página -->
+        <div class="flex items-center gap-1">
+            <button *ngFor="let page of getPageNumbers()" (click)="goToPage(page)" [class]="getPageButtonClass(page)">
+                {{ page === -1 ? '...' : page }}
+            </button>
+        </div>
+
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Siguiente
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+</div>
