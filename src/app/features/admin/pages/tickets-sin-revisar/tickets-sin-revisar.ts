@@ -13,16 +13,17 @@ import { FormsModule } from '@angular/forms';
 })
 export class AdminTicketsSinRevisarComponent implements OnInit {
 
+    // Signals
     tickets = signal<any[]>([]);
     loading = signal<boolean>(false);
     errorMsg = signal<string>('');
-    modalVisible = signal(false);
 
-    // Propiedades para la paginación
+    // Paginación
     currentPage = 1;
     itemsPerPage = 10;
     totalTickets = 0;
-    // busqueda
+
+    // Filtros
     filtroBusqueda: string = '';
     filtroOrigen: string = 'todos';
     filtroEvento: string = 'todos';
@@ -38,27 +39,29 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
         this.cargarTickets();
     }
 
+    get fechaActual(): Date {
+        return new Date();
+    }
+
     cargarTickets() {
         this.loading.set(true);
         this.errorMsg.set('');
-        this.tickets.set([]);
-
+        
         this.ticketService.getTicketsSinRevisar()
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
                 next: (resp: any) => {
-                    console.log('Tickets sin revisar:', resp);
-
                     if (resp?.success) {
-                        const ticketsData = resp.data?.tickets ?? resp.data?.tickets_sin_revisar ?? [];
-                        this.tickets.set(ticketsData);
-                        this.totalTickets = ticketsData.length; // ✅ Actualizar totalTickets
+                        // Soporta ambas estructuras de respuesta por si acaso
+                        const data = resp.data?.tickets ?? resp.data?.tickets_sin_revisar ?? [];
+                        this.tickets.set(data);
+                        // El totalTickets se actualizará dinámicamente según el filtro
                     } else {
-                        this.errorMsg.set(resp?.message || 'No se pudieron obtener los tickets sin revisar');
+                        this.errorMsg.set(resp?.message || 'No se pudieron cargar los tickets.');
                     }
                 },
                 error: () => {
-                    this.errorMsg.set('Error al obtener los tickets sin revisar');
+                    this.errorMsg.set('Error de conexión al cargar tickets.');
                 }
             });
     }
@@ -66,50 +69,49 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
     verDetalle(ticket_id: number): void {
         this.router.navigate([`/admin/ticket/${ticket_id}/sin-revisar`]);
     }
+
+    // =========================================================
+    // LÓGICA DE FILTRADO Y PAGINACIÓN
+    // =========================================================
+
     getFilteredTickets() {
-        const search = this.filtroBusqueda.toLowerCase();
+        const search = this.filtroBusqueda.toLowerCase().trim();
 
         return this.tickets().filter(t => {
 
-            // 🔍 BUSQUEDA GENERAL
+            // 1. Búsqueda Texto
             const matchSearch =
+                !search ||
                 t.asunto.toLowerCase().includes(search) ||
                 t.usuario_nombre.toLowerCase().includes(search) ||
-                t.origen.toLowerCase().includes(search) ||
-                t.evento.toLowerCase().includes(search);
+                t.ticket_id.toString().includes(search);
 
+            // 2. Origen
             const matchOrigen =
                 this.filtroOrigen === 'todos' ||
-                t.origen.toLowerCase() === this.filtroOrigen;
+                t.origen?.toLowerCase() === this.filtroOrigen;
 
+            // 3. Evento
             const matchEvento =
                 this.filtroEvento === 'todos' ||
-                t.evento.toLowerCase() === this.filtroEvento;
+                t.evento?.toLowerCase() === this.filtroEvento;
 
-            const fecha = new Date(t.fecha_creacion);
+            // 4. Fechas
+            const fechaTicket = new Date(t.fecha_creacion);
+            
+            const matchDesde = !this.filtroFechaDesde || 
+                fechaTicket >= new Date(this.filtroFechaDesde);
 
-            // Desde
-            const matchFechaDesde =
-                !this.filtroFechaDesde ||
-                fecha >= new Date(this.filtroFechaDesde);
+            const matchHasta = !this.filtroFechaHasta || 
+                fechaTicket <= new Date(this.filtroFechaHasta + 'T23:59:59');
 
-            // Hasta
-            const matchFechaHasta =
-                !this.filtroFechaHasta ||
-                fecha <= new Date(this.filtroFechaHasta + 'T23:59:59');
-
-            return matchSearch && matchOrigen && matchEvento && matchFechaDesde && matchFechaHasta;
+            return matchSearch && matchOrigen && matchEvento && matchDesde && matchHasta;
         });
-    }
-
-    // Computed properties
-    get totalPages(): number {
-        return Math.ceil(this.totalTickets / this.itemsPerPage);
     }
 
     getPaginatedTickets() {
         const filtered = this.getFilteredTickets();
-        this.totalTickets = filtered.length;
+        this.totalTickets = filtered.length; // Actualizar total para la UI
 
         const start = (this.currentPage - 1) * this.itemsPerPage;
         return filtered.slice(start, start + this.itemsPerPage);
@@ -124,97 +126,54 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
         this.currentPage = 1;
     }
 
-    getStartIndex(): number {
-        return (this.currentPage - 1) * this.itemsPerPage;
+    // Optimizador para ngFor
+    trackByTicketId(index: number, ticket: any): number {
+        return ticket.ticket_id;
     }
 
-    getEndIndex(): number {
-        return Math.min(this.currentPage * this.itemsPerPage, this.totalTickets);
+    // =========================================================
+    // PAGINACIÓN UI
+    // =========================================================
+
+    get totalPages(): number {
+        return Math.ceil(this.totalTickets / this.itemsPerPage) || 1;
     }
 
-    // Métodos de navegación
     previousPage(): void {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-        }
+        if (this.currentPage > 1) this.currentPage--;
     }
 
     nextPage(): void {
-        if (this.currentPage < this.totalPages) {
-            this.currentPage++;
-        }
+        if (this.currentPage < this.totalPages) this.currentPage++;
     }
 
     goToPage(page: number): void {
-        if (page >= 1 && page <= this.totalPages) {
+        if (page !== -1 && page >= 1 && page <= this.totalPages) {
             this.currentPage = page;
         }
     }
 
-    // Generar números de página para el paginador
     getPageNumbers(): number[] {
         const pages: number[] = [];
-        const maxVisiblePages = 7;
+        const total = this.totalPages;
+        const current = this.currentPage;
 
-        if (this.totalPages <= maxVisiblePages) {
-            // Mostrar todas las páginas
-            for (let i = 1; i <= this.totalPages; i++) {
-                pages.push(i);
-            }
+        if (total <= 7) {
+            for (let i = 1; i <= total; i++) pages.push(i);
         } else {
-            // Lógica para mostrar páginas con ellipsis
-            if (this.currentPage <= 4) {
-                // Primeras páginas
-                for (let i = 1; i <= 5; i++) {
-                    pages.push(i);
-                }
-                pages.push(-1); // -1 representa los puntos suspensivos
-                pages.push(this.totalPages);
-            } else if (this.currentPage >= this.totalPages - 3) {
-                // Últimas páginas
-                pages.push(1);
-                pages.push(-1);
-                for (let i = this.totalPages - 4; i <= this.totalPages; i++) {
-                    pages.push(i);
-                }
+            if (current <= 4) {
+                pages.push(1, 2, 3, 4, 5, -1, total);
+            } else if (current >= total - 3) {
+                pages.push(1, -1, total - 4, total - 3, total - 2, total - 1, total);
             } else {
-                // Páginas intermedias
-                pages.push(1);
-                pages.push(-1);
-                for (let i = this.currentPage - 1; i <= this.currentPage + 1; i++) {
-                    pages.push(i);
-                }
-                pages.push(-1);
-                pages.push(this.totalPages);
+                pages.push(1, -1, current - 1, current, current + 1, -1, total);
             }
         }
-
         return pages;
     }
 
-    // Clase CSS para los botones de página
-    getPageButtonClass(page: number): string {
-        const baseClass = 'px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px]';
-
-        if (page === -1) {
-            return `${baseClass} text-slate-500 cursor-default`;
-        }
-
-        if (page === this.currentPage) {
-            return `${baseClass} bg-blue-600 text-white hover:bg-blue-700`;
-        }
-
-        return `${baseClass} text-slate-700 bg-white border border-slate-300 hover:bg-slate-50`;
-    }
-
-    // Cambiar items por página
     onItemsPerPageChange(event: any): void {
-        this.itemsPerPage = parseInt(event.target.value, 10);
-        this.currentPage = 1; // Volver a la primera página
-    }
-
-    // Getter para la fecha actual
-    get fechaActual(): Date {
-        return new Date();
+        this.itemsPerPage = Number(event.target.value);
+        this.currentPage = 1;
     }
 }

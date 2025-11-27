@@ -1,164 +1,120 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';  // ← IMPORTANTE
-import { AuthService } from '../../../core/services/auth/auth.service';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { finalize } from 'rxjs';
+
+// 1. Importamos el servicio
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule],  // ← AGREGA CommonModule AQUÍ
+  imports: [FormsModule, CommonModule],
   templateUrl: './login.html',
 })
 export class LoginComponent {
 
-
   correo = '';
   contrasena = '';
   recordarSesion = false;
-
   loading = false;
-  errorMsg = '';
 
-  // Año actual para el footer
   currentYear = new Date().getFullYear();
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {
-    // Cargar credenciales guardadas si "recordar sesión" estaba activado
     this.cargarCredencialesGuardadas();
   }
 
-  /**
-   * Carga las credenciales guardadas en localStorage si existen
-   */
   private cargarCredencialesGuardadas(): void {
-    const credencialesGuardadas = localStorage.getItem('hospital_credenciales');
-    if (credencialesGuardadas) {
-      const credenciales = JSON.parse(credencialesGuardadas);
-      this.correo = credenciales.correo || '';
-      this.contrasena = credenciales.contrasena || '';
+    const creds = localStorage.getItem('hospital_credenciales');
+    if (creds) {
+      const data = JSON.parse(creds);
+      this.correo = data.correo || '';
+      this.contrasena = data.contrasena || '';
       this.recordarSesion = true;
     }
   }
 
-  /**
-   * Guarda las credenciales en localStorage
-   */
   private guardarCredenciales(): void {
     if (this.recordarSesion) {
-      const credenciales = {
+      localStorage.setItem('hospital_credenciales', JSON.stringify({
         correo: this.correo,
         contrasena: this.contrasena
-      };
-      localStorage.setItem('hospital_credenciales', JSON.stringify(credenciales));
+      }));
     } else {
       localStorage.removeItem('hospital_credenciales');
     }
   }
 
-
-
-  /**
-   * Valida el formato del correo institucional
-   */
   private validarCorreoInstitucional(correo: string): boolean {
-    const dominioValido = /@hospital.cl$/i;
-    return dominioValido.test(correo);
+    // const dominioValido = /@hospital.cl$/i; 
+    // return dominioValido.test(correo);
+    return true; 
   }
 
-  /**
-   * Maneja el envío del formulario de login
-   */
   onSubmit(): void {
-    // Validaciones básicas
+    // 1. Validaciones
     if (!this.correo || !this.contrasena) {
-      this.errorMsg = 'Por favor, completa todos los campos';
+      this.toastr.warning('Por favor completa todos los campos', 'Atención');
       return;
     }
 
-    // Validar formato de correo institucional
     if (!this.validarCorreoInstitucional(this.correo)) {
-      this.errorMsg = 'Por favor, usa tu correo institucional del hospital (@hospital.puntaarenas.cl)';
+      this.toastr.warning('Debes usar tu correo institucional', 'Correo inválido');
       return;
     }
 
     this.loading = true;
-    this.errorMsg = '';
 
-    this.authService.login(this.correo, this.contrasena).subscribe({
-      next: (resp: any) => {
-        this.loading = false;
+    this.authService.login(this.correo, this.contrasena)
+      .pipe(
+        finalize(() => this.loading = false)
+      )
+      .subscribe({
+        next: (resp: any) => {
+          if (resp?.success) {
+            // LOGIN EXITOSO
+            const user = resp.data?.user;
+            this.authService.setUser(user);
+            this.guardarCredenciales();
+            
+            // Mensaje de éxito
+            this.toastr.success(`Bienvenido, ${user.nombre_completo || 'Usuario'}`, 'Acceso Correcto');
 
-        if (resp?.success) {
-          const user = resp.data?.user;
-          this.authService.setUser(user);
-
-          // Guardar credenciales si el usuario marcó "recordar sesión"
-          this.guardarCredenciales();
-
-          // Redirigir según rol con mensajes personalizados
-          this.redirigirSegunRol(user);
-        } else {
-          this.errorMsg = resp?.message || 'Error al iniciar sesión. Por favor, verifica tus credenciales.';
+            this.redirigirSegunRol(user);
+          } else {
+            // LOGIN FALLIDO (Lógica de negocio: contraseña mal, usuario inactivo, etc.)
+            this.toastr.error(resp?.message || 'Credenciales inválidas', 'Error de Acceso');
+          }
+        },
+        error: (err) => {
+          // ERROR DE RED O SERVIDOR
+          let msg = 'No se pudo conectar con el servidor';
+          if (err.status === 401) msg = 'Credenciales incorrectas';
+          if (err.status >= 500) msg = 'Error interno del sistema';
+          
+          this.toastr.error(msg, 'Error');
+          console.error(err);
         }
-      },
-      error: (err) => {
-        this.loading = false;
-
-        // Mensajes de error más específicos
-        if (err.status === 0) {
-          this.errorMsg = 'Error de conexión. Verifica tu conexión a internet.';
-        } else if (err.status === 401) {
-          this.errorMsg = 'Credenciales incorrectas. Por favor, verifica tu correo y contraseña.';
-        } else if (err.status === 500) {
-          this.errorMsg = 'Error del servidor. Por favor, contacta al soporte técnico.';
-        } else {
-          this.errorMsg = 'Error inesperado. Intenta nuevamente o contacta soporte.';
-        }
-
-        console.error('Error en login:', err);
-      }
-    });
+      });
   }
 
-
-  /**
-   * Redirige al usuario según su rol con lógica mejorada
-   */
   private redirigirSegunRol(user: any): void {
-    const rol = user.nombre_rol?.toLowerCase();
-
-    switch (rol) {
-      case 'solicitante':
-        this.router.navigate(['/inicio']);
-        console.log('Redirigiendo a panel de solicitante');
-        break;
-
-      case 'soporte':
-        this.router.navigate(['/soporte']);
-        console.log('Redirigiendo a panel de soporte técnico');
-        break;
-
-      case 'administrador':
-        this.router.navigate(['/admin']);
-        console.log('Redirigiendo a panel administrativo');
-        break;
-      default:
-        console.warn('Rol no reconocido:', rol);
-        this.router.navigate(['/']);
-        break;
-    }
-  }
-
-  /**
-   * Limpia el mensaje de error cuando el usuario empieza a escribir
-   */
-  onInputChange(): void {
-    if (this.errorMsg) {
-      this.errorMsg = '';
-    }
+    // Pequeño delay para que se alcance a apreciar el Toast verde
+    setTimeout(() => {
+        const rol = user.nombre_rol?.toLowerCase();
+        switch (rol) {
+        case 'solicitante': this.router.navigate(['/inicio']); break;
+        case 'soporte': this.router.navigate(['/soporte']); break;
+        case 'administrador': this.router.navigate(['/admin']); break;
+        default: this.router.navigate(['/']); break;
+        }
+    }, 500);
   }
 }

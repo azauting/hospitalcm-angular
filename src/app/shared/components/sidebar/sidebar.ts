@@ -1,7 +1,8 @@
-import { Component, OnInit, effect } from '@angular/core';
+import { Component, OnInit, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
     selector: 'app-sidebar',
@@ -17,18 +18,16 @@ export class SidebarComponent implements OnInit {
         public authService: AuthService,
         private router: Router,
     ) {
-
-        // Detectar cambios de ruta
-        this.router.events.subscribe(() => {
-            this.currentRoute = this.router.url;
+        // 1. Detectar cambios de ruta para marcar activo el botón
+        this.router.events.pipe(
+            filter(event => event instanceof NavigationEnd)
+        ).subscribe((event: any) => {
+            this.currentRoute = event.urlAfterRedirects || event.url;
         });
 
-        // 🔥 SE EJECUTA CADA VEZ QUE EL USER CAMBIA (signal)
+        // 2. Efecto para redirección de seguridad por Rol
         effect(() => {
-            const user = this.authService.user(); // <-- así se lee un signal
-
-            console.log("📌 Sidebar recibió usuario:", user);
-
+            const user = this.authService.user();
             if (user) {
                 this.redirectIfRoleMismatch(user);
             }
@@ -36,29 +35,49 @@ export class SidebarComponent implements OnInit {
     }
 
     ngOnInit() {
-
         this.currentRoute = this.router.url;
 
-        // Si no hay usuario cargado → recuperarlo desde cookie
+        // Recuperar sesión si se recarga la página
         if (!this.authService.getUser()) {
-            console.log("⏳ Recuperando usuario desde cookie...");
             this.authService.refreshUser();
-        } else {
-            console.log("✔ Usuario ya estaba cargado:", this.authService.getUser());
         }
     }
 
-    // ACCESO AL USUARIO DESDE EL HTML
+    // Getter para usar en el HTML de forma limpia
     get usuario() {
-        return this.authService.user(); // signal()
+        return this.authService.user();
     }
 
     // ======================================================
-    // REDIRECCIÓN POR ROL
+    // LÓGICA DE ESTILOS (Colores Corporativos)
     // ======================================================
-    redirectIfRoleMismatch(user: any) {
-        if (!user) return;
+    getNavButtonClass(route: string): string {
+        // Verifica si la ruta actual es exactamente la del botón
+        const isActive = this.currentRoute === route;
 
+        if (isActive) {
+            // ACTIVO: Fondo Cian (#62CEEA) y Texto Azul (#002777) con sombra suave
+            return 'bg-[#62CEEA] text-[#002777] shadow-md shadow-[#62CEEA]/20 font-bold';
+        }
+        
+        // INACTIVO: Texto Blanco semi-transparente, Hover blanco suave
+        return 'text-white/80 hover:bg-white/10 hover:text-white font-medium';
+    }
+
+    getInitials(name: string | undefined): string {
+        if (!name) return 'U';
+        const parts = name.split(' ');
+        // Retorna primera letra del primer nombre + primera letra del último apellido
+        if (parts.length > 1) {
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+        return parts[0].substring(0, 2).toUpperCase();
+    }
+
+    // ======================================================
+    // SEGURIDAD: REDIRECCIÓN POR ROL
+    // ======================================================
+    private redirectIfRoleMismatch(user: any) {
         const rol = user.nombre_rol?.toLowerCase();
         const url = this.router.url;
 
@@ -67,69 +86,33 @@ export class SidebarComponent implements OnInit {
         }
 
         if (rol === 'soporte' && url.startsWith('/admin')) {
-            this.router.navigate(['/soporte/tickets']);
+            this.router.navigate(['/soporte']); // Corregido a la raíz de soporte
         }
     }
 
     // ======================================================
-    // ADMIN
+    // NAVEGACIÓN - ADMIN
     // ======================================================
-    goDashboard() {
-        this.router.navigate(['/admin']);
-    }
-
-    goTicketsSinRevisar() {
-        this.router.navigate(['/admin/tickets/sin-revisar']);
-    }
-
-    goTicketsRevisados() {
-        this.router.navigate(['/admin/tickets/revisados']);
-    }
-
-    goCrearTicket() {
-        this.router.navigate(['/admin/crear-ticket']);
-    }
-
-    goTicketsInternos() {
-        this.router.navigate(['/admin/tickets/internos']);
-    }
-    goUsuarios() {
-        this.router.navigate(['/admin/usuarios']);
-    }
+    goDashboard() { this.router.navigate(['/admin']); }
+    goTicketsSinRevisar() { this.router.navigate(['/admin/tickets/sin-revisar']); }
+    goTicketsRevisados() { this.router.navigate(['/admin/tickets/revisados']); }
+    goCrearTicket() { this.router.navigate(['/admin/crear-ticket']); }
+    goTicketsInternos() { this.router.navigate(['/admin/tickets/internos']); } // Agregado
+    goUsuarios() { this.router.navigate(['/admin/usuarios']); }
 
     // ======================================================
-    // SOPORTE
+    // NAVEGACIÓN - SOPORTE
     // ======================================================
-    goSoporteTickets() {
-        this.router.navigate(['/soporte']);
-    }
-
-    goSoporteMisTickets() {
-        this.router.navigate(['/soporte/mis-tickets']);
-    }
-
-    goSoporteCrearTicket() {
-        this.router.navigate(['/soporte/crear-ticket']);
-    }
+    goSoporteTickets() { this.router.navigate(['/soporte']); }
+    goSoporteMisTickets() { this.router.navigate(['/soporte/mis-tickets']); }
+    goSoporteCrearTicket() { this.router.navigate(['/soporte/crear-ticket']); }
 
     // ======================================================
     // UTILIDADES
     // ======================================================
     cerrarSesion() {
         this.authService.setUser(null);
+        localStorage.removeItem('hospital_credenciales'); // Opcional: limpiar credenciales guardadas
         this.router.navigate(['/login']);
-    }
-
-    getInitials(name: string): string {
-        if (!name) return '';
-        const p = name.split(' ');
-        return (p[0][0] + p[p.length - 1][0]).toUpperCase();
-    }
-
-    getNavButtonClass(route: string): string {
-        if (this.currentRoute === route) {
-            return 'bg-slate-800 text-white';
-        }
-        return 'text-slate-400 hover:bg-slate-700 hover:text-white';
     }
 }
