@@ -1,0 +1,286 @@
+<div class="mx-auto max-w-7xl space-y-6 pb-12">
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-[#002777] rounded-xl flex items-center justify-center shadow-lg shadow-[#002777]/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-[#002777]">Centro de Comando</h1>
+                <p class="text-slate-500 text-sm">Monitoreo de KPIs, SLA y Rendimiento Operativo</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden sm:block">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Actualización</p>
+                <p class="text-sm font-mono text-slate-700 font-medium">{{ fechaActual | date:'mediumTime' }}</p>
+            </div>
+            <button (click)="refreshData()" 
+                class="p-2.5 rounded-xl border border-slate-200 hover:border-[#62CEEA] hover:text-[#002777] transition-all group bg-white">
+                <svg class="w-5 h-5 text-slate-400 group-hover:text-[#002777] group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="border-b border-slate-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            
+            <button (click)="currentTab.set('general')"
+                [class]="getTabClass('general')"
+                class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
+                <svg [class]="getIconClass('general')" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                Vista General
+            </button>
+
+            <button (click)="currentTab.set('unidades')"
+                [class]="getTabClass('unidades')"
+                class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
+                <svg [class]="getIconClass('unidades')" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                Por Unidades
+            </button>
+
+            <button (click)="currentTab.set('sla')"
+                [class]="getTabClass('sla')"
+                class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
+                <svg [class]="getIconClass('sla')" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                SLA y KPIs
+            </button>
+
+            <button (click)="currentTab.set('equipo')"
+                [class]="getTabClass('equipo')"
+                class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
+                <svg [class]="getIconClass('equipo')" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Rendimiento Equipo
+            </button>
+        </nav>
+    </div>
+
+    <div *ngIf="loading()" class="flex flex-col items-center py-20">
+        <div class="w-10 h-10 border-4 border-[#62CEEA]/30 border-t-[#002777] rounded-full animate-spin"></div>
+        <p class="mt-4 text-sm text-slate-500">Calculando métricas...</p>
+    </div>
+
+    <div *ngIf="!loading()" class="animate-fade-in">
+
+        <div *ngIf="currentTab() === 'general'" class="space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingresados Hoy</p>
+                            <h3 class="text-3xl font-bold text-[#002777] mt-1">{{ stats().creados_hoy }}</h3>
+                        </div>
+                        <div class="p-2 bg-blue-50 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">
+                        <span class="text-green-600 font-semibold">↑ 12%</span> vs ayer
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">En Gestión</p>
+                            <h3 class="text-3xl font-bold text-amber-600 mt-1">{{ stats().en_proceso }}</h3>
+                        </div>
+                        <div class="p-2 bg-amber-50 rounded-lg">
+                            <svg class="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">Atención activa</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Resueltos Hoy</p>
+                            <h3 class="text-3xl font-bold text-emerald-600 mt-1">{{ stats().cerrados_hoy }}</h3>
+                        </div>
+                        <div class="p-2 bg-emerald-50 rounded-lg">
+                            <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">
+                        Eficiencia diaria: <span class="font-semibold text-slate-700">{{ calcEficiencia() }}%</span>
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Backlog Abierto</p>
+                            <h3 class="text-3xl font-bold text-red-600 mt-1">{{ stats().abiertos_totales }}</h3>
+                        </div>
+                        <div class="p-2 bg-red-50 rounded-lg">
+                            <svg class="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">Sin asignar o pendientes</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-[#002777] mb-6">Tendencia Semanal (Volumen de Tickets)</h3>
+                
+                <div class="flex items-end justify-between h-48 gap-2">
+                    <div *ngFor="let dia of stats().semana" class="flex flex-col items-center gap-2 flex-1 group">
+                        <div class="relative w-full flex justify-center items-end h-full bg-slate-50 rounded-t-lg overflow-hidden">
+                            <div class="w-2/3 bg-[#62CEEA] rounded-t-md hover:bg-[#002777] transition-all duration-300 relative group-hover:shadow-lg" 
+                                 [style.height.%]="(dia.total / 50) * 100">
+                            </div>
+                            <div class="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs py-1 px-2 rounded pointer-events-none">
+                                {{ dia.total }} tickets
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-500 uppercase">{{ dia.dia }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="currentTab() === 'unidades'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div *ngFor="let u of stats().unidades" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="font-bold text-[#002777]">{{ u.nombre }}</h3>
+                    <span class="text-xs bg-white border border-slate-200 px-2 py-1 rounded text-slate-500">{{ u.total_miembros }} miembros</span>
+                </div>
+                
+                <div class="p-5 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-slate-600">Pendientes</span>
+                        <span class="font-bold text-slate-800">{{ u.abiertos }}</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full" [style.width.%]="(u.abiertos / 50) * 100"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-sm text-slate-600">En Proceso</span>
+                        <span class="font-bold text-slate-800">{{ u.en_proceso }}</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="bg-amber-500 h-2 rounded-full" [style.width.%]="(u.en_proceso / 50) * 100"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-sm text-slate-600">Cerrados Hoy</span>
+                        <span class="font-bold text-slate-800">{{ u.cerrados_hoy }}</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="bg-emerald-500 h-2 rounded-full" [style.width.%]="(u.cerrados_hoy / 50) * 100"></div>
+                    </div>
+                </div>
+
+                <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 text-xs text-center text-slate-500">
+                    MTTR Promedio: <span class="font-bold text-[#002777]">{{ u.mttr }}h</span>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="currentTab() === 'sla'" class="space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
+                    <div class="relative w-32 h-32 flex items-center justify-center mb-4">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+                            <path class="text-[#62CEEA]" [attr.stroke-dasharray]="stats().sla_global + ', 100'" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+                        </svg>
+                        <div class="absolute text-2xl font-bold text-[#002777]">{{ stats().sla_global }}%</div>
+                    </div>
+                    <h3 class="font-bold text-slate-700">Cumplimiento SLA Global</h3>
+                    <p class="text-xs text-slate-500 mt-1">Meta Objetivo: 95%</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 col-span-2">
+                    <h3 class="font-bold text-[#002777] mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Tiempo Medio de Resolución (MTTR) por Prioridad
+                    </h3>
+                    
+                    <div class="space-y-6 mt-6">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-red-700">Crítica / Alta</span>
+                                <span class="font-bold text-slate-700">1.5h <span class="text-slate-400 font-normal">/ Meta 4h</span></span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-3">
+                                <div class="bg-red-500 h-3 rounded-full shadow-sm shadow-red-200" style="width: 35%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-amber-700">Media</span>
+                                <span class="font-bold text-slate-700">5.2h <span class="text-slate-400 font-normal">/ Meta 12h</span></span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-3">
+                                <div class="bg-amber-500 h-3 rounded-full shadow-sm shadow-amber-200" style="width: 45%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-green-700">Baja</span>
+                                <span class="font-bold text-slate-700">18h <span class="text-slate-400 font-normal">/ Meta 24h</span></span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-3">
+                                <div class="bg-green-500 h-3 rounded-full shadow-sm shadow-green-200" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="currentTab() === 'equipo'" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+                <h3 class="font-bold text-[#002777]">Rendimiento Individual (Mes Actual)</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-white text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
+                            <th class="px-6 py-4">Técnico</th>
+                            <th class="px-6 py-4">Unidad</th>
+                            <th class="px-6 py-4 text-center">Tickets Resueltos</th>
+                            <th class="px-6 py-4 text-center">Asignados Actuales</th>
+                            <th class="px-6 py-4 text-center">Eficacia</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr *ngFor="let t of stats().equipo" class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-slate-800">{{ t.nombre }}</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">{{ t.unidad }}</td>
+                            <td class="px-6 py-4 text-center font-bold text-emerald-600">{{ t.resueltos }}</td>
+                            <td class="px-6 py-4 text-center font-bold text-amber-600">{{ t.asignados }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ t.eficacia }}%
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -9,6 +9,9 @@ import { Router } from '@angular/router';
 export class SolicitanteInicioComponent {
   constructor(private router: Router) {}
   irACrearTicket() {
-    this.router.navigate(['/solicitante/crear-ticket']);
+    this.router.navigate(['/inicio/crear-ticket']);
+  }
+  irAMisTickets() {
+    this.router.navigate(['/inicio/mis-tickets']);
   }
 }

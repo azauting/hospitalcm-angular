@@ -79,14 +79,17 @@ export class SolicitanteNavbarComponent implements OnInit {
 	}
 
 	// Clase CSS para botones de navegación activos
-	getNavButtonClass(route: string): string {
-		const baseClasses = 'px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2';
+	getNavButtonClass(ruta: string): string {
+		const isActive = this.router.url === ruta;
+		// Si está activo: Fondo Cian muy suave (10%) y texto Azul Corporativo
+		// Si inactivo: Texto gris slate, hover con fondo gris muy suave
+		return isActive
+			? 'bg-[#62CEEA]/10 text-[#002777]'
+			: 'text-slate-600 hover:bg-slate-50 hover:text-[#002777]';
+	}
 
-		if (this.currentRoute === route) {
-			return `${baseClasses} bg-blue-100 text-blue-700 border border-blue-200`;
-		}
-
-		return `${baseClasses} text-slate-600 hover:bg-slate-100 hover:text-slate-900`;
+	isActive(ruta: string): boolean {
+		return this.router.url === ruta;
 	}
 
 	recargar() {

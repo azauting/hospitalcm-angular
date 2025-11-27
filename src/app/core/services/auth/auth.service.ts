@@ -24,6 +24,7 @@ export class AuthService {
             next: (resp: any) => {
                 if (resp?.success) {
                     this.user.set(resp.data?.user);
+                    console.log('Usuario autenticado:', resp.data?.user);
                 } else {
                     this.user.set(null);
                 }

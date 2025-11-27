@@ -1,57 +1,84 @@
-<div class="w-64 bg-slate-800 text-white flex flex-col h-full">
+<aside class="w-72 bg-[#001b55] text-white flex flex-col h-full border-l border-white/5 shadow-2xl">
 
-    <!-- Header -->
-    <header class="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+    <header class="px-5 py-4 border-b border-white/10 bg-[#002777]/50 backdrop-blur-sm flex items-center justify-between sticky top-0 z-10">
         <div>
-            <p class="text-xs font-semibold">
-                Movimientos recientes
+            <h3 class="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Actividad Reciente
+            </h3>
+            <p class="text-[10px] text-slate-400 mt-0.5" *ngIf="!loading()">
+                Monitoreando tickets en tiempo real
             </p>
-            <p class="text-[11px] text-slate-300" *ngIf="!loading()">
-                Últimas acciones en tickets
+            <p class="text-[10px] text-[#62CEEA] mt-0.5 animate-pulse" *ngIf="loading()">
+                Actualizando datos...
             </p>
-            <p class="text-[11px] text-slate-300" *ngIf="loading()">
-                Cargando...
-            </p>
+        </div>
+
+        <div class="relative flex h-2.5 w-2.5" title="Sistema en línea">
+            <span *ngIf="!errorMsg()" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span [ngClass]="errorMsg() ? 'bg-red-500' : 'bg-emerald-500'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
         </div>
     </header>
 
-    <!-- Error -->
-    <div *ngIf="errorMsg()" class="px-4 py-2">
-        <p class="text-[11px] text-red-300">
-            {{ errorMsg() }}
-        </p>
+    <div *ngIf="errorMsg()" class="px-4 py-3 bg-red-900/20 border-b border-red-500/20">
+        <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p class="text-[10px] text-red-200 leading-tight">{{ errorMsg() }}</p>
+        </div>
     </div>
 
-    <!-- Lista de movimientos -->
-    <section class="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-        <p *ngIf="movimientos().length === 0 && !loading() && !errorMsg()" class="text-[11px] text-slate-300 px-1">
-            Aún no hay movimientos recientes.
-        </p>
+    <section class="flex-1 overflow-y-auto custom-scrollbar p-4">
+        
+        <div *ngIf="movimientos().length === 0 && !loading() && !errorMsg()" 
+             class="flex flex-col items-center justify-center h-32 text-center opacity-50">
+            <svg class="w-8 h-8 text-slate-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+            </svg>
+            <p class="text-xs text-slate-400">Sin actividad reciente</p>
+        </div>
 
-        <article *ngFor="let m of movimientos()"
-            class="relative bg-slate-700/70 border border-slate-600 rounded-lg px-3 py-2 text-xs shadow-sm">
-            <!-- Botón cerrar tarjeta -->
-            <button type="button" (click)="cerrarTarjeta(m.ticket_movimiento_id)"
-                class="absolute top-1 right-1 text-[10px] text-slate-300 hover:text-white">
-                ✕
-            </button>
+        <div class="space-y-6 relative border-l-2 border-white/10 ml-2.5">
+            
+            <article *ngFor="let m of movimientos()" class="relative pl-6 group">
+                
+                <button (click)="cerrarTarjeta(m.ticket_movimiento_id)" 
+                    class="absolute top-0 right-0 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
 
-            <p class="text-[11px] font-semibold mb-1">
-                Ticket #{{ m.ticket_id }}
-            </p>
+                <div class="absolute -left-[9px] top-0 bg-[#001b55] p-1 rounded-full border border-slate-600 group-hover:border-[#62CEEA] transition-colors">
+                    <div [innerHTML]="getIconForType(m.tipo_movimiento)" class="w-3 h-3 text-[#62CEEA]"></div>
+                </div>
 
-            <p class="text-[11px]">
-                {{ formatoTipoMovimiento(m.tipo_movimiento) }}
-            </p>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="bg-white/10 px-1.5 py-0.5 rounded text-[10px] font-mono text-[#62CEEA]">
+                            #{{ m.ticket_id }}
+                        </span>
+                        <span class="text-xs font-bold text-white truncate max-w-[140px]">
+                            {{ formatoTipoMovimiento(m.tipo_movimiento) }}
+                        </span>
+                    </div>
 
-            <p class="text-[11px] text-slate-200 mt-1">
-                Por {{ m.nombre_completo }}
-            </p>
+                    <p class="text-[11px] text-slate-300">
+                        <span class="text-slate-500">Por:</span> {{ m.nombre_completo }}
+                    </p>
 
-            <p class="text-[10px] text-slate-300 mt-1">
-                {{ m.fecha | date:'short' }}
-            </p>
-        </article>
+                    <p class="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {{ m.fecha | date:'shortTime' }} · {{ m.fecha | date:'dd/MM' }}
+                    </p>
+                </div>
+            </article>
+
+        </div>
     </section>
-
-</div>
+</aside>

@@ -1,100 +1,134 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms'; // <--- IMPORTANTE
 import { TicketService } from '../../../../core/services/ticket/ticket.service';
+import { finalize } from 'rxjs';
 
 @Component({
     selector: 'app-mis-tickets',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule], // <--- Agregado FormsModule
     templateUrl: './mis-tickets.html',
 })
 export class MisTicketsComponent implements OnInit {
 
-    tickets = signal<any[]>([]);
-    loading = signal<boolean>(false);
-    errorMsg = signal<string>('');
+    // --- DATA ---
+    tickets = signal<any[]>([]);           // Todos los tickets (Backup)
+    ticketsFiltrados = signal<any[]>([]);  // Los que se ven en la tabla
+    
+    // --- UI STATES ---
+    loading = signal(false);
+    errorMsg = signal('');
 
-    // Propiedades para la paginación
+    // --- FILTROS (Signals) ---
+    filtroTexto = signal('');
+    filtroFechaInicio = signal('');
+    filtroFechaFin = signal('');
+
+    // --- PAGINACIÓN ---
     currentPage = 1;
-    itemsPerPage = 5;
-    totalTickets = 0;
+    itemsPerPage = 10;
+    totalPages = 1;
+    
+    // --- UTILIDADES ---
+    Math = Math; // Para usar Math.min en el HTML
 
     constructor(
         private ticketService: TicketService,
         private router: Router
-    ) { }
+    ) {}
 
     ngOnInit() {
         this.cargarMisTickets();
     }
 
+    // =============================================================
+    // CARGA DE DATOS
+    // =============================================================
     cargarMisTickets() {
         this.loading.set(true);
         this.errorMsg.set('');
-        this.tickets.set([]);
-
+        
         this.ticketService.getMisTickets()
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
                 next: (resp: any) => {
-                    console.log('Respuesta /api/tickets/mis-tickets:', resp);
-
                     if (resp?.success) {
-                        const ticketsData = resp.data?.tickets ?? [];
-                        this.tickets.set(ticketsData);
-                        this.totalTickets = ticketsData.length; // ← ACTUALIZAR totalTickets
+                        const data = resp.data?.tickets ?? []; // Ajusta según venga tu API (resp.data o resp.data.tickets)
+                        
+                        // Ordenamos por fecha (el más nuevo primero)
+                        data.sort((a: any, b: any) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime());
+
+                        this.tickets.set(data);
+                        
+                        // Inicializamos la vista filtrada con todos los datos
+                        this.aplicarFiltros(); 
                     } else {
                         this.errorMsg.set(resp?.message || 'No se pudieron obtener tus tickets');
                     }
                 },
-                error: () => {
-                    this.errorMsg.set('Error al obtener tus tickets');
-                }
+                error: () => this.errorMsg.set('Error de conexión al obtener tus tickets')
             });
     }
 
-    verDetalle(ticketId: number): void {
-        // Navegar a la página de detalle del ticket
-        this.router.navigate(['/inicio/ticket', ticketId]);
+    // =============================================================
+    // LÓGICA DE FILTRADO
+    // =============================================================
+    aplicarFiltros() {
+        let resultado = [...this.tickets()];
+        
+        const texto = this.filtroTexto().toLowerCase().trim();
+        const inicio = this.filtroFechaInicio() ? new Date(this.filtroFechaInicio()) : null;
+        const fin = this.filtroFechaFin() ? new Date(this.filtroFechaFin()) : null;
+
+        // Ajuste: Que la fecha fin incluya todo el día (hasta las 23:59:59)
+        if (fin) fin.setHours(23, 59, 59);
+
+        // 1. Filtro por Texto (ID, Asunto, Estado)
+        if (texto) {
+            resultado = resultado.filter(t => 
+                t.asunto.toLowerCase().includes(texto) ||
+                t.ticket_id.toString().includes(texto) ||
+                t.estado.toLowerCase().includes(texto)
+            );
+        }
+
+        // 2. Filtro por Rango de Fechas
+        if (inicio || fin) {
+            resultado = resultado.filter(t => {
+                const fechaTicket = new Date(t.fecha_creacion);
+                if (inicio && fechaTicket < inicio) return false;
+                if (fin && fechaTicket > fin) return false;
+                return true;
+            });
+        }
+
+        this.ticketsFiltrados.set(resultado);
+        
+        // Recalcular paginación y volver a la página 1
+        this.calculateTotalPages();
+        this.currentPage = 1;
     }
 
-    // Método para contar tickets por estado
-    getTicketsByStatus(status: string): number {
-        return this.tickets().filter(t => t.estado === status).length;
+    limpiarFiltros() {
+        this.filtroTexto.set('');
+        this.filtroFechaInicio.set('');
+        this.filtroFechaFin.set('');
+        this.aplicarFiltros();
     }
 
-    // Computed properties
-    get totalPages(): number {
-        return Math.ceil(this.totalTickets / this.itemsPerPage);
+    // =============================================================
+    // LÓGICA DE PAGINACIÓN
+    // =============================================================
+    calculateTotalPages() {
+        this.totalPages = Math.ceil(this.ticketsFiltrados().length / this.itemsPerPage) || 1;
     }
 
     getPaginatedTickets(): any[] {
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
         const endIndex = startIndex + this.itemsPerPage;
-        return this.tickets().slice(startIndex, endIndex);
-    }
-
-    getStartIndex(): number {
-        return (this.currentPage - 1) * this.itemsPerPage;
-    }
-
-    getEndIndex(): number {
-        return Math.min(this.currentPage * this.itemsPerPage, this.totalTickets);
-    }
-
-    // Métodos de navegación
-    previousPage(): void {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-        }
-    }
-
-    nextPage(): void {
-        if (this.currentPage < this.totalPages) {
-            this.currentPage++;
-        }
+        return this.ticketsFiltrados().slice(startIndex, endIndex);
     }
 
     goToPage(page: number): void {
@@ -103,65 +137,53 @@ export class MisTicketsComponent implements OnInit {
         }
     }
 
-    // Generar números de página para el paginador
+    previousPage(): void {
+        this.goToPage(this.currentPage - 1);
+    }
+
+    nextPage(): void {
+        this.goToPage(this.currentPage + 1);
+    }
+
     getPageNumbers(): number[] {
-        const pages: number[] = [];
-        const maxVisiblePages = 7;
-
-        if (this.totalPages <= maxVisiblePages) {
-            // Mostrar todas las páginas
-            for (let i = 1; i <= this.totalPages; i++) {
-                pages.push(i);
-            }
-        } else {
-            // Lógica para mostrar páginas con ellipsis
-            if (this.currentPage <= 4) {
-                // Primeras páginas
-                for (let i = 1; i <= 5; i++) {
-                    pages.push(i);
-                }
-                pages.push(-1); // -1 representa los puntos suspensivos
-                pages.push(this.totalPages);
-            } else if (this.currentPage >= this.totalPages - 3) {
-                // Últimas páginas
-                pages.push(1);
-                pages.push(-1);
-                for (let i = this.totalPages - 4; i <= this.totalPages; i++) {
-                    pages.push(i);
-                }
-            } else {
-                // Páginas intermedias
-                pages.push(1);
-                pages.push(-1);
-                for (let i = this.currentPage - 1; i <= this.currentPage + 1; i++) {
-                    pages.push(i);
-                }
-                pages.push(-1);
-                pages.push(this.totalPages);
-            }
-        }
-
-        return pages;
+        // Genera array simple [1, 2, 3...] según totalPages
+        return Array.from({ length: this.totalPages }, (_, i) => i + 1);
     }
 
-    // Clase CSS para los botones de página
-    getPageButtonClass(page: number): string {
-        const baseClass = 'px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px]';
-
-        if (page === -1) {
-            return `${baseClass} text-slate-500 cursor-default`;
-        }
-
-        if (page === this.currentPage) {
-            return `${baseClass} bg-blue-600 text-white hover:bg-blue-700`;
-        }
-
-        return `${baseClass} text-slate-700 bg-white border border-slate-300 hover:bg-slate-50`;
+    // =============================================================
+    // UI HELPERS & NAVEGACIÓN
+    // =============================================================
+    verDetalle(ticketId: number): void {
+        this.router.navigate(['/inicio/ticket', ticketId]);
     }
 
-    // Cambiar items por página
-    onItemsPerPageChange(event: any): void {
-        this.itemsPerPage = parseInt(event.target.value, 10);
-        this.currentPage = 1; // Volver a la primera página
+    crearTicket() {
+        this.router.navigate(['/inicio/crear-ticket']);
+    }
+
+    // Clases para el Badge (Fondo y Texto)
+    getStatusClass(status: string): string {
+        const map: any = {
+            'abierto': 'bg-blue-50 text-blue-700 border-blue-200',
+            'nuevo': 'bg-blue-50 text-blue-700 border-blue-200',
+            'en proceso': 'bg-amber-50 text-amber-700 border-amber-200',
+            'cerrado': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            'resuelto': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            'cancelado': 'bg-red-50 text-red-700 border-red-200'
+        };
+        return map[status.toLowerCase()] || 'bg-slate-50 text-slate-700 border-slate-200';
+    }
+
+    // Clases para el Puntito de color dentro del badge
+    getStatusDotClass(status: string): string {
+        const map: any = {
+            'abierto': 'bg-blue-500',
+            'nuevo': 'bg-blue-500',
+            'en proceso': 'bg-amber-500',
+            'cerrado': 'bg-emerald-500',
+            'resuelto': 'bg-emerald-500',
+            'cancelado': 'bg-red-500'
+        };
+        return map[status.toLowerCase()] || 'bg-slate-500';
     }
 }

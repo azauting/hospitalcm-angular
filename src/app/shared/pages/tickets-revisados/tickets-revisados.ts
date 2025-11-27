@@ -1,10 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
 import { TicketService } from '../../../core/services/ticket/ticket.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
-import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-tickets-revisados',
@@ -13,21 +13,27 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './tickets-revisados.html',
 })
 export class TicketsRevisadosComponent implements OnInit {
+
+  // DATA
   tickets = signal<any[]>([]);
+
+  // STATES
   loading = signal(false);
   errorMsg = signal('');
 
-  // Propiedades para la paginación
+  // PAGINACIÓN
   currentPage = 1;
-  itemsPerPage = 5;
+  itemsPerPage = 10; // Subido a 10 por defecto, se ve mejor en tablas completas
   totalTickets = 0;
 
+  // FILTROS
   filtroBusqueda: string = '';
   filtroPrioridad: string = 'todos';
   filtroEstado: string = 'todos';
   filtroFechaDesde: string = '';
   filtroFechaHasta: string = '';
-  // Propiedad para el usuario
+
+  // USUARIO
   usuario: any;
 
   constructor(
@@ -37,9 +43,12 @@ export class TicketsRevisadosComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    // Obtener el usuario del servicio de autenticación
     this.usuario = this.authService.getUser();
     this.cargarTickets();
+  }
+
+  get fechaActual(): Date {
+    return new Date();
   }
 
   cargarTickets() {
@@ -52,43 +61,56 @@ export class TicketsRevisadosComponent implements OnInit {
         next: (resp: any) => {
           if (resp?.success) {
             const ticketsData = resp.data?.tickets || [];
+            // Ordenar por fecha descendente (más nuevo arriba) por defecto
+            ticketsData.sort((a: any, b: any) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime());
+
             this.tickets.set(ticketsData);
             this.totalTickets = ticketsData.length;
-            console.log('Tickets revisados cargados:', ticketsData);
           } else {
             this.errorMsg.set(resp?.message || 'No se pudieron obtener los tickets');
           }
         },
         error: () => {
-          this.errorMsg.set('Error al obtener los tickets de la unidad');
+          this.errorMsg.set('Error de conexión con el servidor');
         },
       });
   }
-
   verDetalle(ticket_id: number): void {
-    this.router.navigate(['/admin/ticket/', ticket_id]);
+    this.ngOnInit();
+    if (this.usuario.nombre_rol === 'administrador') {
+      this.router.navigate(['/admin/ticket', ticket_id]);
+    } else {
+      this.router.navigate(['/soporte/ticket', ticket_id]);
+    }
   }
 
+
+  // =========================================================
+  // LÓGICA DE FILTRADO
+  // =========================================================
   getFilteredTickets() {
-    const search = this.filtroBusqueda.toLowerCase();
+    const search = this.filtroBusqueda.toLowerCase().trim();
 
     return this.tickets().filter(t => {
 
-      // 🔍 BUSQUEDA GENERAL
+      // 1. Búsqueda
       const matchSearch =
+        !search ||
         t.asunto.toLowerCase().includes(search) ||
-        t.descripcion.toLowerCase().includes(search) ||
-        t.prioridad.toLowerCase().includes(search) ||
-        t.estado.toLowerCase().includes(search);
+        t.descripcion?.toLowerCase().includes(search) ||
+        t.ticket_id.toString().includes(search);
 
+      // 2. Prioridad
       const matchPrioridad =
         this.filtroPrioridad === 'todos' ||
         t.prioridad.toLowerCase() === this.filtroPrioridad;
 
+      // 3. Estado
       const matchEstado =
         this.filtroEstado === 'todos' ||
         t.estado.toLowerCase() === this.filtroEstado;
 
+      // 4. Fechas
       const fecha = new Date(t.fecha_creacion);
 
       const matchFechaDesde =
@@ -103,26 +125,9 @@ export class TicketsRevisadosComponent implements OnInit {
     });
   }
 
-  // Getter para obtener el nombre de la unidad de forma segura
   get nombreUnidad(): string {
     if (!this.usuario) return 'Mi Unidad';
-
-    // Diferentes posibles nombres de propiedades donde podría estar la unidad
-    return this.usuario.nombre_unidad ||
-      this.usuario.unidad
-  }
-
-  // Computed properties
-  get totalPages(): number {
-    return Math.ceil(this.totalTickets / this.itemsPerPage);
-  }
-
-  getPaginatedTickets() {
-    const filtered = this.getFilteredTickets();
-    this.totalTickets = filtered.length;
-
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    return filtered.slice(start, start + this.itemsPerPage);
+    return this.usuario.nombre_unidad || this.usuario.unidad || 'Unidad Central';
   }
 
   resetFiltros() {
@@ -134,6 +139,22 @@ export class TicketsRevisadosComponent implements OnInit {
     this.currentPage = 1;
   }
 
+  // =========================================================
+  // PAGINACIÓN
+  // =========================================================
+
+  get totalPages(): number {
+    return Math.ceil(this.totalTickets / this.itemsPerPage) || 1;
+  }
+
+  getPaginatedTickets() {
+    const filtered = this.getFilteredTickets();
+    this.totalTickets = filtered.length;
+
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return filtered.slice(start, start + this.itemsPerPage);
+  }
+
   getStartIndex(): number {
     return (this.currentPage - 1) * this.itemsPerPage;
   }
@@ -142,129 +163,68 @@ export class TicketsRevisadosComponent implements OnInit {
     return Math.min(this.currentPage * this.itemsPerPage, this.totalTickets);
   }
 
-  // Métodos de navegación
   previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
+    if (this.currentPage > 1) this.currentPage--;
   }
 
   nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
+    if (this.currentPage < this.totalPages) this.currentPage++;
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page !== -1 && page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
     }
   }
 
-  // Generar números de página para el paginador
   getPageNumbers(): number[] {
     const pages: number[] = [];
-    const maxVisiblePages = 7;
+    const total = this.totalPages;
+    const current = this.currentPage;
 
-    if (this.totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= this.totalPages; i++) {
-        pages.push(i);
-      }
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
     } else {
-      if (this.currentPage <= 4) {
-        for (let i = 1; i <= 5; i++) {
-          pages.push(i);
-        }
-        pages.push(-1);
-        pages.push(this.totalPages);
-      } else if (this.currentPage >= this.totalPages - 3) {
-        pages.push(1);
-        pages.push(-1);
-        for (let i = this.totalPages - 4; i <= this.totalPages; i++) {
-          pages.push(i);
-        }
+      if (current <= 4) {
+        pages.push(1, 2, 3, 4, 5, -1, total);
+      } else if (current >= total - 3) {
+        pages.push(1, -1, total - 4, total - 3, total - 2, total - 1, total);
       } else {
-        pages.push(1);
-        pages.push(-1);
-        for (let i = this.currentPage - 1; i <= this.currentPage + 1; i++) {
-          pages.push(i);
-        }
-        pages.push(-1);
-        pages.push(this.totalPages);
+        pages.push(1, -1, current - 1, current, current + 1, -1, total);
       }
     }
-
     return pages;
   }
-  getPriorityClass(prioridad: string) {
-    if (!prioridad) return 'bg-slate-100 text-slate-800 border border-slate-200';
 
-    const normalized = prioridad.toLowerCase().trim();
-    if (normalized === 'alta') {
-      return 'bg-red-100 text-red-800 border border-red-200';
-    }
-    if (normalized === 'media') {
-      return 'bg-amber-100 text-amber-800 border border-amber-200';
-    }
-    if (normalized === 'baja') {
-      return 'bg-green-100 text-green-800 border border-green-200';
-    }
-
-    return 'bg-slate-100 text-slate-800 border border-slate-200';
-  }
-  getStatusClass(estado: string) {
-    if (!estado) return 'bg-slate-100 text-slate-800 border border-slate-200';
-
-    const normalized = estado.toLowerCase().trim();
-
-    if (normalized === 'abierto') {
-      return 'bg-blue-100 text-blue-800 border border-blue-200';
-    }
-
-    if (normalized === 'en proceso') {
-      return 'bg-amber-100 text-amber-800 border border-amber-200';
-    }
-
-    if (normalized === 'en pausa') {
-      return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
-    }
-
-    if (normalized === 'cancelado') {
-      return 'bg-red-100 text-red-800 border border-red-200';
-    }
-
-    if (normalized === 'cerrado') {
-      return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
-    }
-
-
-
-    return 'bg-slate-100 text-slate-800 border border-slate-200';
-  }
-
-  // Clase CSS para los botones de página
-  getPageButtonClass(page: number): string {
-    const baseClass = 'px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px]';
-
-    if (page === -1) {
-      return `${baseClass} text-slate-500 cursor-default`;
-    }
-
-    if (page === this.currentPage) {
-      return `${baseClass} bg-blue-600 text-white hover:bg-blue-700`;
-    }
-
-    return `${baseClass} text-slate-700 bg-white border border-slate-300 hover:bg-slate-50`;
-  }
-
-  // Cambiar items por página
   onItemsPerPageChange(event: any): void {
     this.itemsPerPage = parseInt(event.target.value, 10);
     this.currentPage = 1;
   }
 
-  // Getter para la fecha actual
-  get fechaActual(): Date {
-    return new Date();
+  // =========================================================
+  // ESTILOS (BADGES)
+  // =========================================================
+
+  getPriorityClass(prioridad: string) {
+    if (!prioridad) return 'bg-slate-100 text-slate-600 border-slate-200';
+    const p = prioridad.toLowerCase();
+
+    if (p === 'alta') return 'bg-red-50 text-red-700 border-red-200';
+    if (p === 'media') return 'bg-amber-50 text-amber-700 border-amber-200';
+    if (p === 'baja') return 'bg-green-50 text-green-700 border-green-200';
+
+    return 'bg-slate-100 text-slate-600 border-slate-200';
+  }
+
+  getStatusClass(estado: string) {
+    if (!estado) return 'bg-slate-100 text-slate-600 border-slate-200';
+    const e = estado.toLowerCase();
+
+    if (e === 'abierto') return 'bg-blue-50 text-blue-700 border-blue-200';
+    if (e === 'en proceso') return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    if (e === 'cerrado') return 'bg-green-100 text-green-600 border-green-200';
+    if (e === 'cancelado') return 'bg-red-50 text-red-700 border-red-200';
+
+    return 'bg-slate-100 text-slate-600 border-slate-200';
   }
 }

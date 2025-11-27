@@ -3,7 +3,8 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/pages/login/login';
 
 import { SolicitanteInicioComponent } from './features/solicitante/pages/inicio/inicio';
-import { AdminInicioComponent } from './features/admin/pages/inicio/inicio';
+import { MisTicketsComponent } from './features/solicitante/pages/mis-tickets/mis-tickets';
+import { AdminDashboardComponent } from './features/admin/pages/dashboard/dashboard';
 import { AdminTicketsSinRevisarComponent } from './features/admin/pages/tickets-sin-revisar/tickets-sin-revisar';
 import { AdminTicketRevisarComponent } from './features/admin/pages/ticket-revisar/ticket-revisar';
 import { AdminUsuariosComponent } from './features/admin/pages/usuarios/usuarios';
@@ -38,7 +39,7 @@ export const routes: Routes = [
         children: [
             { path: '', component: SolicitanteInicioComponent },
             { path: 'crear-ticket', component: CrearTicketComponent },
-            { path: 'mis-tickets', component: TicketsAsignadosPorSoporteComponent },
+            { path: 'mis-tickets', component: MisTicketsComponent },
             { path: 'ticket/:id', component: TicketDetalleComponent },
         ]
     },
@@ -47,7 +48,7 @@ export const routes: Routes = [
         component: SoporteLayoutComponent,
         children: [
             { path: '', component: TicketsRevisadosComponent },
-            {path: 'mis-tickets', component: TicketsAsignadosPorSoporteComponent },
+            { path: 'mis-tickets', component: TicketsAsignadosPorSoporteComponent },
             { path: 'crear-ticket', component: CrearTicketComponent },
             { path: 'ticket/:id', component: TicketDetalleStaffComponent },
         ]
@@ -56,7 +57,7 @@ export const routes: Routes = [
         path: 'admin',
         component: AdminLayoutComponent,
         children: [
-            { path: '', component: AdminInicioComponent },
+            { path: '', component: AdminDashboardComponent },
             { path: 'tickets/sin-revisar', component: AdminTicketsSinRevisarComponent },
             { path: 'ticket/:id/sin-revisar', component: AdminTicketRevisarComponent },
             { path: 'tickets/revisados', component: TicketsRevisadosComponent },

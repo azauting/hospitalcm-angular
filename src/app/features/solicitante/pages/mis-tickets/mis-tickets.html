@@ -1,146 +1,180 @@
-<div class="mx-auto max-w-5xl">
-    <!-- HEADER -->
-    <header class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-800">Mis tickets</h1>
-                <p class="text-slate-600 mt-2">
-                    Revisa aquí los tickets que has enviado y sigue su estado.
-                </p>
-            </div>
+<div class="mx-auto max-w-6xl space-y-6 pb-12">
 
-            <button type="button" (click)="cargarMisTickets()"
-                class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span class="text-sm font-medium">Recargar</span>
-            </button>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-[#002777]">Mis Tickets</h1>
+            <p class="text-slate-500 text-sm">Historial de solicitudes realizadas</p>
         </div>
-    </header>
 
-    <!-- LOADING -->
-    <div class="flex justify-center py-8" *ngIf="loading()">
-        <div class="flex flex-col items-center">
-            <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <p class="mt-3 text-sm text-slate-500">Cargando tus tickets...</p>
-        </div>
-    </div>
-
-    <!-- ERROR -->
-    <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6" *ngIf="!loading() && errorMsg()">
-        <div class="flex items-start gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mt-0.5" fill="currentColor"
-                viewBox="0 0 20 20">
-                <path fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd" />
+        <button type="button" (click)="cargarMisTickets()"
+            class="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-[#002777] font-medium shadow-sm hover:border-[#62CEEA] hover:shadow-md transition-all">
+            <svg class="h-4 w-4 text-[#002777] group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            <div>
-                <h3 class="text-sm font-medium text-red-800">Error al cargar tickets</h3>
-                <p class="text-sm text-red-700 mt-1">{{ errorMsg() }}</p>
+            <span>Actualizar</span>
+        </button>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            
+            <div class="md:col-span-6">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Buscar</label>
+                <div class="relative">
+                    <input type="text" 
+                        [(ngModel)]="filtroTexto" 
+                        (ngModelChange)="aplicarFiltros()"
+                        placeholder="Buscar por asunto, ID o estado..." 
+                        class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CEEA] focus:border-transparent text-sm transition-all">
+                    
+                    <svg class="w-5 h-5 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    
+                    <button *ngIf="filtroTexto()" (click)="filtroTexto.set(''); aplicarFiltros()" 
+                        class="absolute right-3 top-2.5 text-slate-400 hover:text-red-500">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="md:col-span-3">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Desde</label>
+                <input type="date" 
+                    [(ngModel)]="filtroFechaInicio" 
+                    (change)="aplicarFiltros()"
+                    class="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CEEA] text-sm text-slate-600">
+            </div>
+
+            <div class="md:col-span-3">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Hasta</label>
+                <input type="date" 
+                    [(ngModel)]="filtroFechaFin" 
+                    (change)="aplicarFiltros()"
+                    class="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CEEA] text-sm text-slate-600">
             </div>
         </div>
     </div>
 
-    <!-- SIN TICKETS -->
-    <div class="text-center py-12" *ngIf="!loading() && !errorMsg() && tickets().length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-400" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <h3 class="mt-4 text-lg font-medium text-slate-900">No tienes tickets aún</h3>
-        <p class="mt-2 text-sm text-slate-500 max-w-md mx-auto">
-            Cuando envíes un ticket, aparecerá aquí para que puedas darle seguimiento.
-        </p>
+    <div *ngIf="loading()" class="flex flex-col items-center justify-center py-12">
+        <div class="w-10 h-10 border-4 border-[#62CEEA]/30 border-t-[#002777] rounded-full animate-spin"></div>
+        <p class="mt-3 text-sm font-medium text-[#002777]">Cargando tus tickets...</p>
     </div>
 
-    <!-- LISTA DE TICKETS EN TABLA -->
-    <div class="mb-6" *ngIf="!loading() && tickets().length > 0">
+    <div *ngIf="!loading() && errorMsg()" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+        <svg class="h-5 w-5 text-red-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+            <h3 class="text-sm font-medium text-red-800">No pudimos cargar la información</h3>
+            <p class="text-sm text-red-600 mt-1">{{ errorMsg() }}</p>
+        </div>
+    </div>
 
-        <div class="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
-            <table class="min-w-full divide-y divide-slate-200">
+    <div *ngIf="!loading() && !errorMsg() && ticketsFiltrados().length === 0 && tickets().length > 0" 
+         class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+        <p class="text-slate-500">No se encontraron tickets con estos filtros.</p>
+        <button (click)="limpiarFiltros()" class="mt-2 text-[#002777] font-medium hover:underline text-sm">Limpiar búsqueda</button>
+    </div>
 
-                <!-- ENCABEZADOS -->
-                <thead class="bg-slate-50 text-slate-700">
+    <div *ngIf="!loading() && ticketsFiltrados().length > 0" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100">
+                <thead class="bg-[#002777]">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">ID</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Asunto</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Fecha</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Estado</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Acción</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">ID</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Asunto / Problema</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Fecha</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Estado</th>
+                        <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">Acciones</th>
                     </tr>
                 </thead>
 
-                <!-- CUERPO -->
                 <tbody class="bg-white divide-y divide-slate-100">
-
-                    <tr *ngFor="let t of getPaginatedTickets()" class="hover:bg-slate-50 transition">
-
-                        <!-- ID -->
-                        <td class="px-4 py-3 text-sm font-medium text-slate-800">
-                            #{{ t.ticket_id }}
+                    <tr *ngFor="let t of getPaginatedTickets()" class="hover:bg-[#62CEEA]/5 transition-colors group">
+                        
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="font-mono text-sm font-bold text-[#002777]">#{{ t.ticket_id }}</span>
                         </td>
 
-                        <!-- ASUNTO -->
-                        <td class="px-4 py-3 text-sm text-slate-700 max-w-xs">
-                            <div class="line-clamp-1 font-medium">{{ t.asunto }}</div>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-slate-900 group-hover:text-[#002777]">{{ t.asunto }}</div>
+                            <div class="text-xs text-slate-500 truncate max-w-xs">{{ t.categoria || 'Soporte General' }}</div>
                         </td>
 
-                        <!-- FECHA -->
-                        <td class="px-4 py-3 text-sm text-slate-600">
-                            {{ t.fecha_creacion | date:'mediumDate' }}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {{ t.fecha_creacion | date:'dd/MM/yyyy' }}
+                            <span class="text-xs text-slate-400 block">{{ t.fecha_creacion | date:'HH:mm' }} hrs</span>
                         </td>
 
-
-                        <!-- ESTADO -->
-                        <td class="px-4 py-3">
-                            <span class="px-2 py-1 rounded-md text-xs font-semibold tracking-wide" [ngClass]="{
-                                'bg-emerald-100 text-emerald-800': t.estado === 'resuelto' || t.estado === 'cerrado',
-                                'bg-amber-100 text-amber-800': t.estado === 'en proceso' || t.estado === 'en_proceso',
-                                'bg-blue-100 text-blue-800': t.estado === 'nuevo' || t.estado === 'abierto',
-                                'bg-slate-100 text-slate-800': true
-                            }">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                                [ngClass]="getStatusClass(t.estado)">
+                                <span class="w-1.5 h-1.5 rounded-full mr-1.5" [ngClass]="getStatusDotClass(t.estado)"></span>
                                 {{ t.estado | titlecase }}
                             </span>
                         </td>
 
-                        <!-- ACCIÓN -->
-                        <td class="px-4 py-3 text-right">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button (click)="verDetalle(t.ticket_id)"
-                                class="px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-medium hover:bg-blue-700 transition shadow-sm">
+                                class="text-[#002777] hover:text-[#62CEEA] font-semibold transition-colors flex items-center justify-end gap-1 ml-auto">
                                 Ver detalle
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
                             </button>
                         </td>
                     </tr>
                 </tbody>
-
             </table>
+        </div>
+
+        <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+            <div class="text-xs text-slate-500">
+                Mostrando <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> a 
+                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, ticketsFiltrados().length) }}</span> 
+                de <span class="font-medium">{{ ticketsFiltrados().length }}</span> tickets
+            </div>
+
+            <div class="flex items-center gap-1">
+                <button (click)="previousPage()" [disabled]="currentPage === 1"
+                    class="p-2 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+
+                <div class="flex gap-1 px-2">
+                    <button *ngFor="let page of getPageNumbers()" 
+                        (click)="goToPage(page)"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors"
+                        [ngClass]="page === currentPage ? 'bg-[#002777] text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                    class="p-2 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
-
-    <!-- PAGINACIÓN -->
-    <div class="flex items-center justify-between border-t border-slate-200 pt-6"
-        *ngIf="!loading() && tickets().length > 0">
-
-        <button (click)="previousPage()" [disabled]="currentPage === 1"
-            class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-50">
-            Anterior
-        </button>
-
-        <div class="flex items-center gap-1">
-            <button *ngFor="let page of getPageNumbers()" (click)="goToPage(page)" [class]="getPageButtonClass(page)">
-                {{ page }}
-            </button>
+    <div *ngIf="!loading() && !errorMsg() && tickets().length === 0" class="text-center py-16">
+        <div class="bg-slate-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
         </div>
-
-        <button (click)="nextPage()" [disabled]="currentPage === totalPages"
-            class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-50">
-            Siguiente
+        <h3 class="text-lg font-bold text-slate-900">Aún no tienes tickets</h3>
+        <p class="text-slate-500 max-w-sm mx-auto mt-2 mb-6">Parece que todo está funcionando bien. Cuando necesites ayuda, aquí aparecerán tus solicitudes.</p>
+        <button (click)="crearTicket()" class="bg-[#002777] text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-900 transition-colors">
+            Crear mi primer ticket
         </button>
     </div>
 </div>

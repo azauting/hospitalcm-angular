@@ -1,7 +1,9 @@
-<div class="h-screen bg-slate-100 flex flex-col">
-    <app-solicitante-navbar></app-solicitante-navbar>
+<div class="h-screen bg-[#EEF5FF] flex flex-col">
+    <app-solicitante-navbar class="z-50"></app-solicitante-navbar>
 
-    <main class="flex-1 overflow-auto h-full p-6">
-        <router-outlet></router-outlet>
+    <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+        <div class="animate-fade-in">
+            <router-outlet></router-outlet>
+        </div>
     </main>
 </div>
