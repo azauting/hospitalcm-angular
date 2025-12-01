@@ -1,0 +1,64 @@
+<!-- LOADING -->
+<div *ngIf="loading()" class="flex flex-col items-center py-12">
+    <div class="w-10 h-10 border-4 border-[#62CEEA]/30 border-t-[#002777] rounded-full animate-spin"></div>
+    <p class="mt-4 text-sm text-slate-500">Cargando métricas...</p>
+</div>
+
+<!-- CONTENIDO -->
+<div *ngIf="!loading()" class="space-y-10">
+
+    <!-- ===================== KPI NUMÉRICOS ===================== -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+
+        <div class="bg-white p-5 rounded-xl border shadow-sm">
+            <p class="text-xs text-slate-400 uppercase font-bold">Ingresados Hoy</p>
+            <h2 class="text-3xl font-bold text-[#002777] mt-1">{{ creadosHoy() }}</h2>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border shadow-sm">
+            <p class="text-xs text-slate-400 uppercase font-bold">En Proceso</p>
+            <h2 class="text-3xl font-bold text-amber-600 mt-1">{{ enProceso() }}</h2>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border shadow-sm">
+            <p class="text-xs text-slate-400 uppercase font-bold">Cerrados Hoy</p>
+            <h2 class="text-3xl font-bold text-emerald-600 mt-1">{{ cerradosHoy() }}</h2>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border shadow-sm">
+            <p class="text-xs text-slate-400 uppercase font-bold">Backlog Abierto</p>
+            <h2 class="text-3xl font-bold text-red-600 mt-1">{{ abiertos() }}</h2>
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- ===================== LINE CHART ===================== -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="text-lg font-bold text-[#002777] mb-4">Resueltos por Mes</h3>
+
+            <apx-chart *ngIf="lineOptions()" [series]="lineOptions().series" [chart]="lineOptions().chart"
+                [xaxis]="lineOptions().xaxis" [stroke]="lineOptions().stroke">
+            </apx-chart>
+        </div>
+
+
+        <!-- ===================== RADIAL CHART (MTTR) ===================== -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h3 class="text-lg font-bold text-[#002777] mb-4">MTTR Mensual</h3>
+
+            <apx-chart *ngIf="radialOptions()" [series]="radialOptions().series" [chart]="radialOptions().chart"
+                [labels]="radialOptions().labels" [plotOptions]="radialOptions().plotOptions">
+            </apx-chart>
+        </div>
+
+
+        <!-- ===================== TREEMAP ===================== -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border col-span-2">
+            <h3 class="text-lg font-bold text-[#002777] mb-4">Incidentes por Ubicación</h3>
+
+            <apx-chart *ngIf="treemapOptions()" [series]="treemapOptions().series" [chart]="treemapOptions().chart">
+            </apx-chart>
+        </div>
+    </div>
+</div>

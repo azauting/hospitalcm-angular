@@ -1,0 +1,59 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
+        <div class="relative w-32 h-32 flex items-center justify-center mb-4">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <path class="text-slate-100"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none"
+                    stroke="currentColor" stroke-width="3" />
+            </svg>
+            <div class="absolute text-2xl font-bold text-[#002777]">80%</div>
+        </div>
+        <h3 class="font-bold text-slate-700">Cumplimiento SLA Global</h3>
+        <p class="text-xs text-slate-500 mt-1">Meta Objetivo: 95%</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 col-span-2">
+        <h3 class="font-bold text-[#002777] mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Tiempo Medio de Resolución (MTTR) por Prioridad
+        </h3>
+
+        <div class="space-y-6 mt-6">
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium text-red-700">Crítica / Alta</span>
+                    <span class="font-bold text-slate-700">1.5h <span class="text-slate-400 font-normal">/ Meta
+                            4h</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                    <div class="bg-red-500 h-3 rounded-full shadow-sm shadow-red-200" style="width: 35%"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium text-amber-700">Media</span>
+                    <span class="font-bold text-slate-700">5.2h <span class="text-slate-400 font-normal">/ Meta
+                            12h</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                    <div class="bg-amber-500 h-3 rounded-full shadow-sm shadow-amber-200" style="width: 45%"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium text-green-700">Baja</span>
+                    <span class="font-bold text-slate-700">18h <span class="text-slate-400 font-normal">/ Meta
+                            24h</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                    <div class="bg-green-500 h-3 rounded-full shadow-sm shadow-green-200" style="width: 75%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
