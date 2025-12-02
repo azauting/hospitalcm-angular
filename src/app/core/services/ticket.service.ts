@@ -11,14 +11,9 @@ export interface TicketCreatePayload {
     ip_manual: string;
 }
 
-export interface Ubicacion {
-    ubicacion_id: number;
-    ubicacion: string;
-    area_id?: number | null;
-    nombre_area?: string | null;
-}
 
-export interface TicketResumen {
+
+export interface TicketSummary {
     ticket_id: number;
     asunto: string;
     estado: string;
@@ -31,14 +26,13 @@ export interface Ticket {
     descripcion: string;
     telefono: string;
     autor_problema: string;
-    ubicacion: Ubicacion;
+    ubicacion: Location;
     prioridad: string;
     unidad: string;
     estado: string;
     evento?: string;
     fecha_creacion: string;
 }
-
 
 @Injectable({
     providedIn: 'root',
@@ -47,70 +41,76 @@ export class TicketService {
     constructor(
         private http: HttpClient,
         @Inject('API_URL') private apiUrl: string
-    ) { }
+    ) {}
 
-    crearTicket(payload: TicketCreatePayload) {
+    // ============================
+    // CREATE TICKET
+    // ============================
+    createTicket(payload: TicketCreatePayload) {
         return this.http.post(
             `${this.apiUrl}/api/tickets`,
             payload,
-            {
-                withCredentials: true,
-            }
+            { withCredentials: true }
         );
     }
 
-    getUbicaciones() {
+    // ============================
+    // LOCATIONS
+    // ============================
+    getLocations() {
         return this.http.get(
             `${this.apiUrl}/api/tipos/ubicacion`,
-            {
-                withCredentials: true,
-            }
+            { withCredentials: true }
         );
     }
-    getMisTickets() {
+
+    // ============================
+    // TICKETS (USER)
+    // ============================
+    getMyTickets() {
         return this.http.get(
             `${this.apiUrl}/api/tickets/mis-tickets`,
-            {
-                withCredentials: true,
-            }
+            { withCredentials: true }
         );
     }
+
     getTicketById(id: number) {
         return this.http.get(
             `${this.apiUrl}/api/tickets/${id}`,
-            {
-                withCredentials: true,
-            }
-        );
-    }
-    getTicketsSinRevisar() {
-        return this.http.get(
-            `${this.apiUrl}/api/tickets/sin-revisar`,
-            {
-                withCredentials: true,
-            }
-        );
-    }
-    getInternalTickets() {
-        return this.http.get(
-            `${this.apiUrl}/api/tickets/internal`,
-            {
-                withCredentials: true,
-            }
-        );
-    }
-    getTicketsAsignadosPorSoporte() {
-        return this.http.get(
-            `${this.apiUrl}/api/tickets/mis-tickets/asignados`,
-            {
-                withCredentials: true,
-            }
+            { withCredentials: true }
         );
     }
 
+    // ============================
+    // TICKETS (ADMIN / SOPORTE)
+    // ============================
+    getUnreviewedTickets() {
+        return this.http.get(
+            `${this.apiUrl}/api/tickets/sin-revisar`,
+            { withCredentials: true }
+        );
+    }
+
+    getInternalTickets() {
+        return this.http.get(
+            `${this.apiUrl}/api/tickets/internal`,
+            { withCredentials: true }
+        );
+    }
+
+    getAssignedTickets() {
+        return this.http.get(
+            `${this.apiUrl}/api/tickets/mis-tickets/asignados`,
+            { withCredentials: true }
+        );
+    }
+
+    // ============================
+    // UPDATE TICKET
+    // ============================
     updateTicket(
         id: number,
-        data: { unidad_id?: number; prioridad_id?: number; }
+        data: { unidad_id?: number; prioridad_id?: number }
     ) {
         return this.http.patch(
             `${this.apiUrl}/api/tickets/${id}`,
@@ -119,22 +119,28 @@ export class TicketService {
         );
     }
 
-    getSoportes() {
-        return this.http.get(
-            `${this.apiUrl}/api/user/soportes-disponibles`,
-            { withCredentials: true }
-        );
-    }
-
-    assignSoporte(ticketId: number, soporteId: number) {
+    // ============================
+    // ASSIGN SUPPORT
+    // ============================
+    assignSupport(ticketId: number, supportId: number) {
         return this.http.patch(
             `${this.apiUrl}/api/tickets/${ticketId}/assign`,
-            { soporte_id: soporteId },
+            { soporte_id: supportId },
             { withCredentials: true }
         );
     }
 
-    // ✅ Marca el ticket como revisado (estado_de_revision = 1)
+    assignTicketToSelf(ticketId: number, supportId: number) {
+        return this.http.patch(
+            `${this.apiUrl}/api/tickets/${ticketId}/assign`,
+            { soporte_id: supportId },
+            { withCredentials: true }
+        );
+    }
+
+    // ============================
+    // REVIEWED TICKETS
+    // ============================
     markReviewed(ticketId: number) {
         return this.http.patch(
             `${this.apiUrl}/api/tickets/${ticketId}/review`,
@@ -142,32 +148,29 @@ export class TicketService {
             { withCredentials: true }
         );
     }
-    getTicketsRevisados() {
+
+    getReviewedTickets() {
         return this.http.get(
             `${this.apiUrl}/api/tickets/revisados`,
             { withCredentials: true }
         );
     }
 
-    assignTicketToSelf(ticketId: number, soporteId: number) {
-        return this.http.patch(
-            `${this.apiUrl}/api/tickets/${ticketId}/assign`,
-            { soporte_id: soporteId },
-            { withCredentials: true }
-        );
-    }
-
-    cerrarTicket(ticketId: number, respuestaFinal: string) {
+    // ============================
+    // CLOSE TICKET
+    // ============================
+    closeTicket(ticketId: number, finalResponse: string) {
         return this.http.patch(
             `${this.apiUrl}/api/tickets/${ticketId}/close`,
-            {
-                respuesta_final: respuestaFinal  
-            },
+            { respuesta_final: finalResponse },
             { withCredentials: true }
         );
     }
 
-    addTicketObservation(ticketId: number, observacion: string) {
+    // ============================
+    // OBSERVATIONS
+    // ============================
+    addObservation(ticketId: number, observacion: string) {
         return this.http.post(
             `${this.apiUrl}/api/tickets/${ticketId}/detalle/observacion`,
             { observacion },
@@ -175,15 +178,24 @@ export class TicketService {
         );
     }
 
-    agregarIntegrante(ticketId: number, usuarioId: number) {
+    // ============================
+    // MEMBERS
+    // ============================
+    addMember(ticketId: number, userId: number) {
         return this.http.post(
             `${this.apiUrl}/api/tickets/${ticketId}/detalle/integrante`,
-            { usuario_id: usuarioId },
+            { usuario_id: userId },
             { withCredentials: true }
         );
     }
 
-
-
-
+    // ============================
+    // CLOSED TICKETS
+    // ============================
+    getClosedTickets() {
+        return this.http.get(
+            `${this.apiUrl}/api/tickets/cerrados`,
+            { withCredentials: true }
+        );
+    }
 }

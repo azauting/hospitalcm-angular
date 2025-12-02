@@ -1,9 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // Asegúrate de importar la interfaz si la tienes exportada en el servicio, ayuda al autocompletado
-import { UserService, UpdateUserPayload } from '../../../../core/services/user/user.service';
+import { UserService, UpdateUserPayload } from '../../../../core/services/user.service';
 import { finalize } from 'rxjs/operators';
-import { AuthService } from '../../../../core/services/auth/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 

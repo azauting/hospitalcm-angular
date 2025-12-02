@@ -3,16 +3,16 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
-import { TicketService } from '../../../core/services/ticket/ticket.service';
-import { AuthService } from '../../../core/services/auth/auth.service';
+import { TicketService } from '../../../core/services/ticket.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
-  selector: 'app-tickets-revisados',
+  selector: 'app-reviewed-tickets',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './tickets-revisados.html',
 })
-export class TicketsRevisadosComponent implements OnInit {
+export class TicketsReviewedComponent implements OnInit {
 
   // DATA
   tickets = signal<any[]>([]);
@@ -21,15 +21,15 @@ export class TicketsRevisadosComponent implements OnInit {
   loading = signal(false);
   errorMsg = signal('');
 
-  // FILTROS
-  filtroBusqueda: string = '';
-  filtroPrioridad: string = 'todos';
-  filtroEstado: string = 'todos';
-  filtroFechaDesde: string = '';
-  filtroFechaHasta: string = '';
+  // FILTERS
+  filterSearch: string = '';
+  filterPriority: string = 'todos';
+  filterStatus: string = 'todos';
+  filterDateFrom: string = '';
+  filterDateTo: string = '';
 
-  // USUARIO
-  usuario: any;
+  // USER
+  user: any;
 
   constructor(
     private ticketService: TicketService,
@@ -38,49 +38,49 @@ export class TicketsRevisadosComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.cargarUsuario(); // Separé la lógica para reutilizarla
-    this.cargarTickets();
+    this.loadUser();
+    this.loadTickets();
   }
 
   // =========================================================
-  // CARGA DE USUARIO (CORREGIDA)
+  // LOAD USER
   // =========================================================
-  cargarUsuario() {
+  loadUser() {
     const rawUser = this.authService.getUser();
 
-    // Verificamos si el usuario viene anidado en 'data.user' (como muestra tu JSON)
     if (rawUser && rawUser.data && rawUser.data.user) {
-        this.usuario = rawUser.data.user;
+        this.user = rawUser.data.user;
     } else {
-        // Fallback: por si acaso ya viniera "plano"
-        this.usuario = rawUser;
+        this.user = rawUser;
     }
     
-    console.log('Usuario cargado:', this.usuario); // Para depurar que "unidad" esté en la raíz del objeto
+    console.log('Usuario cargado:', this.user);
   }
 
-  get fechaActual(): Date {
+  get currentDate(): Date {
     return new Date();
   }
 
   // =========================================================
-  // CARGA DE TICKETS
+  // LOAD TICKETS
   // =========================================================
-  cargarTickets() {
+  loadTickets() {
     this.loading.set(true);
     this.errorMsg.set('');
 
-    this.ticketService.getTicketsRevisados()
+    this.ticketService.getReviewedTickets()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (resp: any) => {
           if (resp?.success) {
-            const ticketsData = resp.data?.tickets || [];
-            
-            // Ordenar por fecha ASCENDENTE (Más antiguo primero)
-            ticketsData.sort((a: any, b: any) => new Date(a.fecha_creacion).getTime() - new Date(b.fecha_creacion).getTime());
+            const data = resp.data?.tickets || [];
 
-            this.tickets.set(ticketsData);
+            // Ascending order (oldest first)
+            data.sort((a: any, b: any) =>
+              new Date(a.fecha_creacion).getTime() - new Date(b.fecha_creacion).getTime()
+            );
+
+            this.tickets.set(data);
           } else {
             this.errorMsg.set(resp?.message || 'No se pudieron obtener los tickets');
           }
@@ -91,20 +91,20 @@ export class TicketsRevisadosComponent implements OnInit {
       });
   }
 
-  verDetalle(ticket_id: number): void {
-    // 1. REVALIDACIÓN DE SEGURIDAD
-    if (!this.usuario) {
-      this.cargarUsuario();
+  viewDetail(ticket_id: number): void {
+
+    // Recheck user
+    if (!this.user) {
+      this.loadUser();
     }
 
-    // 2. COMPROBACIÓN FINAL
-    if (!this.usuario || !this.usuario.nombre_rol) {
-      console.error('Error: No se pudo identificar el rol del usuario.', this.usuario);
+    if (!this.user || !this.user.nombre_rol) {
+      console.error('Error: No se pudo identificar el rol del usuario.', this.user);
       return;
     }
 
-    // 3. NAVEGACIÓN SEGURA
-    if (this.usuario.nombre_rol === 'administrador') {
+    // Safe navigation by role
+    if (this.user.nombre_rol === 'administrador') {
       this.router.navigate(['/admin/ticket', ticket_id]);
     } else {
       this.router.navigate(['/soporte/ticket', ticket_id]);
@@ -112,60 +112,59 @@ export class TicketsRevisadosComponent implements OnInit {
   }
 
   // =========================================================
-  // LÓGICA DE FILTRADO GENERAL
+  // GENERAL FILTERING LOGIC
   // =========================================================
   getFilteredTickets() {
-    const search = this.filtroBusqueda.toLowerCase().trim();
+    const search = this.filterSearch.toLowerCase().trim();
 
     return this.tickets().filter(t => {
-      // 1. Búsqueda
+
       const matchSearch =
         !search ||
         t.asunto.toLowerCase().includes(search) ||
         t.descripcion?.toLowerCase().includes(search) ||
         t.ticket_id.toString().includes(search);
 
-      // 2. Prioridad
-      const matchPrioridad =
-        this.filtroPrioridad === 'todos' ||
-        t.prioridad.toLowerCase() === this.filtroPrioridad;
+      const matchPriority =
+        this.filterPriority === 'todos' ||
+        t.prioridad.toLowerCase() === this.filterPriority;
 
-      // 3. Estado
-      const matchEstado =
-        this.filtroEstado === 'todos' ||
-        t.estado.toLowerCase() === this.filtroEstado;
+      const matchStatus =
+        this.filterStatus === 'todos' ||
+        t.estado.toLowerCase() === this.filterStatus;
 
-      // 4. Fechas
       const fecha = new Date(t.fecha_creacion);
-      const matchFechaDesde = !this.filtroFechaDesde || fecha >= new Date(this.filtroFechaDesde);
-      const matchFechaHasta = !this.filtroFechaHasta || fecha <= new Date(this.filtroFechaHasta + 'T23:59:59');
 
-      return matchSearch && matchPrioridad && matchEstado && matchFechaDesde && matchFechaHasta;
+      const matchFrom =
+        !this.filterDateFrom || fecha >= new Date(this.filterDateFrom);
+
+      const matchTo =
+        !this.filterDateTo || fecha <= new Date(this.filterDateTo + 'T23:59:59');
+
+      return matchSearch && matchPriority && matchStatus && matchFrom && matchTo;
     });
   }
 
   // =========================================================
-  // FILTRO PARA KANBAN
+  // FILTERING FOR KANBAN COLUMNS
   // =========================================================
-  getTicketsByPriority(prioridadColumna: string) {
-    const ticketsFiltrados = this.getFilteredTickets();
-    return ticketsFiltrados.filter(t => t.prioridad.toLowerCase() === prioridadColumna.toLowerCase());
+  getTicketsByPriority(priorityColumn: string) {
+    const filtered = this.getFilteredTickets();
+    return filtered.filter(t => t.prioridad.toLowerCase() === priorityColumn.toLowerCase());
   }
 
-  get nombreUnidad(): string {
-    // Como ya "desempaquetamos" el usuario en cargarUsuario(), ahora sí podemos acceder directo
-    if (!this.usuario) return 'Cargando...';
-    
-    // Tu JSON dice "unidad", pero a veces puede ser "nombre_unidad", dejamos ambos por seguridad
-    const u = this.usuario.nombre_unidad || this.usuario.unidad || 'Unidad Central';
-    return u.charAt(0).toUpperCase() + u.slice(1); // Capitalizar primera letra
+  get unitName(): string {
+    if (!this.user) return 'Cargando...';
+
+    const u = this.user.nombre_unidad || this.user.unidad || 'Unidad Central';
+    return u.charAt(0).toUpperCase() + u.slice(1);
   }
 
-  resetFiltros() {
-    this.filtroBusqueda = '';
-    this.filtroPrioridad = 'todos';
-    this.filtroEstado = 'todos';
-    this.filtroFechaDesde = '';
-    this.filtroFechaHasta = '';
+  resetFilters() {
+    this.filterSearch = '';
+    this.filterPriority = 'todos';
+    this.filterStatus = 'todos';
+    this.filterDateFrom = '';
+    this.filterDateTo = '';
   }
 }

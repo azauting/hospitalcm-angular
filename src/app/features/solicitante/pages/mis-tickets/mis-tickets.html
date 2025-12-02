@@ -6,7 +6,7 @@
             <p class="text-slate-500 text-sm">Historial de solicitudes realizadas</p>
         </div>
 
-        <button type="button" (click)="cargarMisTickets()"
+        <button type="button" (click)="loadMyTickets()"
             class="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-[#002777] font-medium shadow-sm hover:border-[#62CEEA] hover:shadow-md transition-all">
             <svg class="h-4 w-4 text-[#002777] group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -22,8 +22,8 @@
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Buscar</label>
                 <div class="relative">
                     <input type="text" 
-                        [(ngModel)]="filtroTexto" 
-                        (ngModelChange)="aplicarFiltros()"
+                        [(ngModel)]="filterText" 
+                        (ngModelChange)="applyFilters()"
                         placeholder="Buscar por asunto, ID o estado..." 
                         class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CEEA] focus:border-transparent text-sm transition-all">
                     
@@ -31,7 +31,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     
-                    <button *ngIf="filtroTexto()" (click)="filtroTexto.set(''); aplicarFiltros()" 
+                    <button *ngIf="filterText()" (click)="filterText.set(''); applyFilters()" 
                         class="absolute right-3 top-2.5 text-slate-400 hover:text-red-500">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -43,16 +43,16 @@
             <div class="md:col-span-3">
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Desde</label>
                 <input type="date" 
-                    [(ngModel)]="filtroFechaInicio" 
-                    (change)="aplicarFiltros()"
+                    [(ngModel)]="filterStartDate" 
+                    (change)="applyFilters()"
                     class="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CEEA] text-sm text-slate-600">
             </div>
 
             <div class="md:col-span-3">
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Hasta</label>
                 <input type="date" 
-                    [(ngModel)]="filtroFechaFin" 
-                    (change)="aplicarFiltros()"
+                    [(ngModel)]="filterEndDate" 
+                    (change)="applyFilters()"
                     class="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CEEA] text-sm text-slate-600">
             </div>
         </div>
@@ -73,13 +73,13 @@
         </div>
     </div>
 
-    <div *ngIf="!loading() && !errorMsg() && ticketsFiltrados().length === 0 && tickets().length > 0" 
+    <div *ngIf="!loading() && !errorMsg() && filteredTickets().length === 0 && tickets().length > 0" 
          class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
         <p class="text-slate-500">No se encontraron tickets con estos filtros.</p>
-        <button (click)="limpiarFiltros()" class="mt-2 text-[#002777] font-medium hover:underline text-sm">Limpiar búsqueda</button>
+        <button (click)="clearFilters()" class="mt-2 text-[#002777] font-medium hover:underline text-sm">Limpiar búsqueda</button>
     </div>
 
-    <div *ngIf="!loading() && ticketsFiltrados().length > 0" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div *ngIf="!loading() && filteredTickets().length > 0" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100">
                 <thead class="bg-[#002777]">
@@ -118,7 +118,7 @@
                         </td>
 
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button (click)="verDetalle(t.ticket_id)"
+                            <button (click)="viewDetail(t.ticket_id)"
                                 class="text-[#002777] hover:text-[#62CEEA] font-semibold transition-colors flex items-center justify-end gap-1 ml-auto">
                                 Ver detalle
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,8 +134,8 @@
         <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
             <div class="text-xs text-slate-500">
                 Mostrando <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> a 
-                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, ticketsFiltrados().length) }}</span> 
-                de <span class="font-medium">{{ ticketsFiltrados().length }}</span> tickets
+                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredTickets().length) }}</span> 
+                de <span class="font-medium">{{ filteredTickets().length }}</span> tickets
             </div>
 
             <div class="flex items-center gap-1">
@@ -173,7 +173,7 @@
         </div>
         <h3 class="text-lg font-bold text-slate-900">Aún no tienes tickets</h3>
         <p class="text-slate-500 max-w-sm mx-auto mt-2 mb-6">Parece que todo está funcionando bien. Cuando necesites ayuda, aquí aparecerán tus solicitudes.</p>
-        <button (click)="crearTicket()" class="bg-[#002777] text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-900 transition-colors">
+        <button (click)="createTicket()" class="bg-[#002777] text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-900 transition-colors">
             Crear mi primer ticket
         </button>
     </div>

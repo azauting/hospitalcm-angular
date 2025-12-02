@@ -47,12 +47,12 @@
 
                         <div class="relative">
                             <select [(ngModel)]="ubicacion_id" name="ubicacion_id" required
-                                [disabled]="loadingUbicaciones()"
+                                [disabled]="loadingLocations()"
                                 class="w-full pl-4 pr-10 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] bg-white text-slate-700 appearance-none transition-all disabled:bg-slate-50 disabled:text-slate-400 cursor-pointer">
                                 <option [ngValue]="null" disabled selected>
-                                    {{ loadingUbicaciones() ? 'Cargando ubicaciones...' : 'Selecciona el lugar donde ocurre el problema' }}
+                                    {{ loadingLocations() ? 'Cargando ubicaciones...' : 'Selecciona el lugar donde ocurre el problema' }}
                                 </option>
-                                @for (u of ubicaciones(); track u.ubicacion_id) {
+                                @for (u of locations(); track u.ubicacion_id) {
                                 <option [ngValue]="u.ubicacion_id">
                                     {{ u.ubicacion }} - {{u.nombre_area}}
                                 </option>
@@ -91,7 +91,7 @@
                 </div>
             </section>
 
-            <div *ngIf="rol === 'soporte' || rol === 'administrador'"
+            <div *ngIf="role === 'soporte' || role === 'administrador'"
                 class="bg-indigo-50 rounded-xl p-5 border border-indigo-100">
                 <h4 class="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -116,7 +116,7 @@
 
             <div class="pt-6 flex flex-col sm:flex-row gap-4 items-center border-t border-slate-100">
 
-                <button type="button" (click)="cancelar()"
+                <button type="button" (click)="cancel()"
                     class="order-2 sm:order-1 w-full sm:w-auto px-6 py-3 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-800 transition-colors font-semibold text-sm">
                     Cancelar
                 </button>

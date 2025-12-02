@@ -12,7 +12,7 @@
         <div class="p-8 sm:p-10">
             <div
                 class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6 mb-8">
-                <button (click)="volver()"
+                <button (click)="goBack()"
                     class="group flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#002777] transition-colors">
                     <div class="p-1.5 rounded-full group-hover:bg-slate-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,9 +121,9 @@
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Revisión y Clasificación</h2>
                     <p class="text-sm text-slate-500">
-                        <span *ngIf="!clasificacionGuardada()">Define la unidad responsable y la urgencia del
+                        <span *ngIf="!isClassificationSaved()">Define la unidad responsable y la urgencia del
                             caso.</span>
-                        <span *ngIf="clasificacionGuardada()"
+                        <span *ngIf="isClassificationSaved()"
                             class="text-emerald-600 font-bold flex items-center gap-1">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -137,7 +137,7 @@
 
             <div class="pl-12 space-y-6">
 
-                <ng-container *ngIf="!clasificacionGuardada()">
+                <ng-container *ngIf="!isClassificationSaved()">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
                             <label class="text-xs font-bold text-slate-700 uppercase">Unidad Responsable</label>
@@ -177,14 +177,14 @@
                     </div>
 
                     <div class="flex justify-end">
-                        <button (click)="guardarCambios()"
+                        <button (click)="saveClassification()"
                             class="text-sm font-bold text-white bg-[#002777] hover:bg-[#001f5c] px-6 py-2.5 rounded-lg transition-colors shadow-lg shadow-blue-900/10">
                             Guardar Clasificación
                         </button>
                     </div>
                 </ng-container>
 
-                <ng-container *ngIf="clasificacionGuardada()">
+                <ng-container *ngIf="isClassificationSaved()">
                     <div class="flex gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
 
                         <div class="flex-1 flex items-center gap-3 border-r border-slate-100 pr-4">
@@ -242,10 +242,10 @@
                     2</div>
                 <div class="flex-1 flex justify-between items-start">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900">Asignar Técnico</h2>
-                        <p class="text-sm text-slate-500">Selecciona el personal que atenderá el caso.</p>
+                        <h2 class="text-lg font-bold text-slate-900">Asignar Soporte</h2>
+                        <p class="text-sm text-slate-500">Selecciona el soporte responsable.</p>
                     </div>
-                    <div *ngIf="detalle()?.soporte_asignado"
+                    <div *ngIf="detail()?.soporte_asignado"
                         class="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">
                         <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                         Asignado
@@ -255,26 +255,25 @@
 
             <div class="pl-12 space-y-6">
 
-                <div *ngIf="detalle()?.soporte_asignado" class="animate-fade-in-up">
+                <div *ngIf="detail()?.soporte_asignado" class="animate-fade-in-up">
                     <div
                         class="bg-blue-50 rounded-xl border border-blue-100 p-5 flex items-center justify-between shadow-sm">
                         <div class="flex items-center gap-4">
                             <div
                                 class="w-14 h-14 rounded-full bg-white border-4 border-blue-100 text-[#002777] flex items-center justify-center font-bold text-xl shadow-sm">
-                                {{ getInicialSoporte() }}
+                                {{ getSupportInitial() }}
                             </div>
                             <div>
-                                <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-0.5">Técnico
-                                    Responsable</p>
-                                <p class="text-lg font-bold text-slate-900">{{ detalle()?.soporte_nombre }}</p>
-                                <p class="text-xs text-slate-500">{{ detalle()?.soporte_unidad || 'Unidad Asignada' }}
+                                <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-0.5">Soporte responsable</p>
+                                <p class="text-lg font-bold text-slate-900">{{ detail()?.soporte_nombre }}</p>
+                                <p class="text-xs text-slate-500">{{ detail()?.soporte_unidad || 'Unidad Asignada' }}
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div *ngIf="!detalle()?.soporte_asignado" class="space-y-4 animate-fade-in-up">
+                <div *ngIf="!detail()?.soporte_asignado" class="space-y-4 animate-fade-in-up">
                     <div class="relative">
                         <input type="text" placeholder="Buscar técnico por nombre..."
                             class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#002777]/20 focus:border-[#002777] outline-none transition-all">
@@ -286,7 +285,7 @@
                     </div>
 
                     <div class="max-h-64 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                        <button *ngFor="let s of soportes()" (click)="asignarSoporte(s.usuario_id)"
+                        <button *ngFor="let s of supportUsers()" (click)="assignSupport(s.usuario_id)"
                             class="w-full flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-[#002777] hover:bg-blue-50 hover:shadow-md transition-all group text-left bg-white">
                             <div class="flex items-center gap-3">
                                 <div
@@ -297,7 +296,7 @@
                                     <p
                                         class="text-sm font-bold text-slate-700 group-hover:text-[#002777] transition-colors">
                                         {{ s.nombre_completo }}</p>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase">{{ s.nombre_unidad }}</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase">{{ s.unidad }}</p>
                                 </div>
                             </div>
                             <div
@@ -309,14 +308,14 @@
                             </div>
                         </button>
 
-                        <div *ngIf="soportes().length === 0" class="text-center py-8 text-slate-400 text-sm italic">
+                        <div *ngIf="supportUsers().length === 0" class="text-center py-8 text-slate-400 text-sm italic">
                             No se encontraron técnicos disponibles.
                         </div>
                     </div>
                 </div>
 
                 <div class="pt-6 mt-6 border-t border-slate-100 flex justify-end">
-                    <button (click)="guardarRevision()"
+                    <button (click)="saveClassification()"
                         class="w-full sm:w-auto px-8 py-4 bg-[#002777] hover:bg-[#001f5c] text-white font-bold rounded-xl shadow-lg hover:shadow-xl shadow-blue-900/10 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />

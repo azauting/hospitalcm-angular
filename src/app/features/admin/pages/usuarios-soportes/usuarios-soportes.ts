@@ -1,8 +1,8 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UserService, UpdateUserPayload } from '../../../../core/services/user/user.service';
+import { UserService, UpdateUserPayload } from '../../../../core/services/user.service';
 import { finalize } from 'rxjs/operators';
-import { AuthService } from '../../../../core/services/auth/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 
@@ -36,7 +36,8 @@ export class UsuariosSoportesComponent implements OnInit {
 
     // MODALS
     showModalAgregar = false;
-    modalPassword: any = null; // Usuario al que se le cambia la pass
+    modalPassword: any = null;
+    modalUnidad: any = null;
 
     // PAGINACIÓN
     currentPage = 1;
@@ -128,6 +129,8 @@ export class UsuariosSoportesComponent implements OnInit {
             });
     }
 
+
+
     // =============================
     // ACCIONES EN CARDS
     // =============================
@@ -174,6 +177,28 @@ export class UsuariosSoportesComponent implements OnInit {
             });
     }
 
+    cambiarUnidad(usuarioId: number, unidadIdStr: string) {
+        const unidadId = Number(unidadIdStr);
+        if (!unidadId) {
+            this.toastr.warning('Debes seleccionar una unidad válida');
+            return;
+        }
+
+        const payload: UpdateUserPayload = { unidad_id: unidadId };
+
+        this.userService.updateUser(usuarioId, payload).subscribe({
+            next: (resp: any) => {
+                if (resp.success) {
+                    this.toastr.success('Unidad actualizada correctamente', 'Éxito');
+                    this.modalUnidad = null; // Cerrar modal
+                    this.cargarSoportes();   // Recargar para ver cambios
+                } else {
+                    this.toastr.error('No se pudo actualizar la unidad', 'Error');
+                }
+            },
+            error: () => this.toastr.error('Error del servidor', 'Error')
+        });
+    }
     // =============================
     // FILTROS Y UTILS
     // =============================

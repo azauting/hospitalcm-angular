@@ -3,32 +3,32 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr'; // <--- Importar Toastr
+import { ToastrService } from 'ngx-toastr';
 
 import {
     TicketService,
-    Ubicacion
-} from '../../../core/services/ticket/ticket.service';
-import { AuthService } from '../../../core/services/auth/auth.service';
+} from '../../../core/services/ticket.service';
+import { Location } from '../../../core/services/tipo.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
-    selector: 'app-crear-ticket',
+    selector: 'app-create-ticket',
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './crear-ticket.html',
 })
 export class CrearTicketComponent implements OnInit {
 
-    // Inyecciones
+    // Injections
     private ticketService = inject(TicketService);
     private router = inject(Router);
     private authService = inject(AuthService);
-    private toastr = inject(ToastrService); // <--- Inyección
+    private toastr = inject(ToastrService);
 
-    // Datos del usuario
-    rol = '';
+    // User data
+    role = '';
 
-    // Campos del formulario
+    // Form fields
     asunto = '';
     descripcion = '';
     telefono = '';
@@ -38,29 +38,29 @@ export class CrearTicketComponent implements OnInit {
     ip_manual = '';
 
     // Signals
-    ubicaciones = signal<Ubicacion[]>([]);
+    locations = signal<Location[]>([]);
     loading = signal<boolean>(false);
-    loadingUbicaciones = signal<boolean>(false);
+    loadingLocations = signal<boolean>(false);
 
     ngOnInit() {
         const user = this.authService.getUser();
-        this.rol = user?.nombre_rol?.toLowerCase() ?? '';
-        this.autor_problema = user?.nombre_completo ?? ''; // Prellenar nombre
-        this.cargarUbicaciones();
+        this.role = user?.nombre_rol?.toLowerCase() ?? '';
+        this.autor_problema = user?.nombre_completo ?? '';
+        this.loadLocations();
     }
 
-    cargarUbicaciones() {
-        if (this.loadingUbicaciones() || this.ubicaciones().length > 0) return;
+    loadLocations() {
+        if (this.loadingLocations() || this.locations().length > 0) return;
 
-        this.loadingUbicaciones.set(true);
+        this.loadingLocations.set(true);
 
-        this.ticketService.getUbicaciones()
-            .pipe(finalize(() => this.loadingUbicaciones.set(false)))
+        this.ticketService.getLocations()
+            .pipe(finalize(() => this.loadingLocations.set(false)))
             .subscribe({
                 next: (resp: any) => {
                     if (resp?.success) {
                         const data = resp.data?.tipos_ubicacion?.ubicaciones ?? [];
-                        this.ubicaciones.set(data);
+                        this.locations.set(data);
 
                         if (data.length === 0) {
                             this.toastr.warning('No hay ubicaciones configuradas en el sistema.', 'Aviso');
@@ -76,9 +76,8 @@ export class CrearTicketComponent implements OnInit {
     }
 
     onSubmit() {
-        if (!this.validarFormulario()) return;
+        if (!this.validateForm()) return;
 
-        // Payload base
         const payload: any = {
             asunto: this.asunto.trim(),
             descripcion: this.descripcion.trim(),
@@ -88,8 +87,8 @@ export class CrearTicketComponent implements OnInit {
             ubicacion_id: this.ubicacion_id!,
         };
 
-        // Payload extra para Staff
-        if (this.rol === 'soporte' || this.rol === 'administrador') {
+        // Extra data for support/admin users
+        if (this.role === 'soporte' || this.role === 'administrador') {
             if (!this.evento_id) {
                 this.toastr.warning('Debes clasificar el tipo de evento', 'Faltan datos');
                 return;
@@ -99,17 +98,15 @@ export class CrearTicketComponent implements OnInit {
 
         this.loading.set(true);
 
-        this.ticketService.crearTicket(payload)
+        this.ticketService.createTicket(payload)
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
                 next: (resp: any) => {
                     if (resp?.success) {
-                        // ÉXITO
                         this.toastr.success('Ticket creado correctamente', '¡Enviado!');
 
-                        // Esperar 1.5s para que el usuario vea el mensaje y redirigir
                         setTimeout(() => {
-                            this.navegarSegunRol();
+                            this.redirectByRole();
                         }, 1500);
 
                     } else {
@@ -124,7 +121,7 @@ export class CrearTicketComponent implements OnInit {
             });
     }
 
-    private validarFormulario(): boolean {
+    private validateForm(): boolean {
         if (!this.asunto.trim()) {
             this.toastr.warning('El asunto es obligatorio', 'Atención');
             return false;
@@ -152,16 +149,14 @@ export class CrearTicketComponent implements OnInit {
         return true;
     }
 
-    // Navegación inmediata (botón Cancelar)
-    cancelar() {
-        this.navegarSegunRol();
+    cancel() {
+        this.redirectByRole();
     }
 
-    // Lógica centralizada de redirección
-    private navegarSegunRol() {
-        if (this.rol === 'administrador') {
+    private redirectByRole() {
+        if (this.role === 'administrador') {
             this.router.navigate(['/admin/tickets/sin-revisar']);
-        } else if (this.rol === 'soporte') {
+        } else if (this.role === 'soporte') {
             this.router.navigate(['/soporte']);
         } else {
             this.router.navigate(['/inicio/mis-tickets']);

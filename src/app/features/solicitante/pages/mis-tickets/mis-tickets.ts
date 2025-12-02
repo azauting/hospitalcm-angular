@@ -1,38 +1,38 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // <--- IMPORTANTE
-import { TicketService } from '../../../../core/services/ticket/ticket.service';
+import { FormsModule } from '@angular/forms';
+import { TicketService } from '../../../../core/services/ticket.service';
 import { finalize } from 'rxjs';
 
 @Component({
-    selector: 'app-mis-tickets',
+    selector: 'app-my-tickets',
     standalone: true,
-    imports: [CommonModule, FormsModule], // <--- Agregado FormsModule
+    imports: [CommonModule, FormsModule],
     templateUrl: './mis-tickets.html',
 })
-export class MisTicketsComponent implements OnInit {
+export class MyTicketsComponent implements OnInit {
 
     // --- DATA ---
-    tickets = signal<any[]>([]);           // Todos los tickets (Backup)
-    ticketsFiltrados = signal<any[]>([]);  // Los que se ven en la tabla
-    
+    tickets = signal<any[]>([]);           
+    filteredTickets = signal<any[]>([]);
+
     // --- UI STATES ---
     loading = signal(false);
     errorMsg = signal('');
 
-    // --- FILTROS (Signals) ---
-    filtroTexto = signal('');
-    filtroFechaInicio = signal('');
-    filtroFechaFin = signal('');
+    // --- FILTERS (Signals) ---
+    filterText = signal('');
+    filterStartDate = signal('');
+    filterEndDate = signal('');
 
-    // --- PAGINACIÓN ---
+    // --- PAGINATION ---
     currentPage = 1;
     itemsPerPage = 10;
     totalPages = 1;
-    
-    // --- UTILIDADES ---
-    Math = Math; // Para usar Math.min en el HTML
+
+    // --- UTILITIES ---
+    Math = Math;
 
     constructor(
         private ticketService: TicketService,
@@ -40,30 +40,32 @@ export class MisTicketsComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.cargarMisTickets();
+        this.loadMyTickets();
     }
 
     // =============================================================
-    // CARGA DE DATOS
+    // LOAD DATA
     // =============================================================
-    cargarMisTickets() {
+    loadMyTickets() {
         this.loading.set(true);
         this.errorMsg.set('');
-        
-        this.ticketService.getMisTickets()
+
+        this.ticketService.getMyTickets()
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
                 next: (resp: any) => {
                     if (resp?.success) {
-                        const data = resp.data?.tickets ?? []; // Ajusta según venga tu API (resp.data o resp.data.tickets)
-                        
-                        // Ordenamos por fecha (el más nuevo primero)
-                        data.sort((a: any, b: any) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime());
+                        const data = resp.data?.tickets ?? [];
+
+                        // Sort newest → oldest
+                        data.sort(
+                            (a: any, b: any) =>
+                                new Date(b.fecha_creacion).getTime() -
+                                new Date(a.fecha_creacion).getTime()
+                        );
 
                         this.tickets.set(data);
-                        
-                        // Inicializamos la vista filtrada con todos los datos
-                        this.aplicarFiltros(); 
+                        this.applyFilters();
                     } else {
                         this.errorMsg.set(resp?.message || 'No se pudieron obtener tus tickets');
                     }
@@ -73,62 +75,62 @@ export class MisTicketsComponent implements OnInit {
     }
 
     // =============================================================
-    // LÓGICA DE FILTRADO
+    // FILTER LOGIC
     // =============================================================
-    aplicarFiltros() {
-        let resultado = [...this.tickets()];
-        
-        const texto = this.filtroTexto().toLowerCase().trim();
-        const inicio = this.filtroFechaInicio() ? new Date(this.filtroFechaInicio()) : null;
-        const fin = this.filtroFechaFin() ? new Date(this.filtroFechaFin()) : null;
+    applyFilters() {
+        let result = [...this.tickets()];
 
-        // Ajuste: Que la fecha fin incluya todo el día (hasta las 23:59:59)
-        if (fin) fin.setHours(23, 59, 59);
+        const text = this.filterText().toLowerCase().trim();
+        const start = this.filterStartDate() ? new Date(this.filterStartDate()) : null;
+        const end = this.filterEndDate() ? new Date(this.filterEndDate()) : null;
 
-        // 1. Filtro por Texto (ID, Asunto, Estado)
-        if (texto) {
-            resultado = resultado.filter(t => 
-                t.asunto.toLowerCase().includes(texto) ||
-                t.ticket_id.toString().includes(texto) ||
-                t.estado.toLowerCase().includes(texto)
+        // Include full day for end date
+        if (end) end.setHours(23, 59, 59);
+
+        // 1. Filter by text
+        if (text) {
+            result = result.filter(t =>
+                t.asunto.toLowerCase().includes(text) ||
+                t.ticket_id.toString().includes(text) ||
+                t.estado.toLowerCase().includes(text)
             );
         }
 
-        // 2. Filtro por Rango de Fechas
-        if (inicio || fin) {
-            resultado = resultado.filter(t => {
-                const fechaTicket = new Date(t.fecha_creacion);
-                if (inicio && fechaTicket < inicio) return false;
-                if (fin && fechaTicket > fin) return false;
+        // 2. Filter by date range
+        if (start || end) {
+            result = result.filter(t => {
+                const ticketDate = new Date(t.fecha_creacion);
+                if (start && ticketDate < start) return false;
+                if (end && ticketDate > end) return false;
                 return true;
             });
         }
 
-        this.ticketsFiltrados.set(resultado);
-        
-        // Recalcular paginación y volver a la página 1
+        this.filteredTickets.set(result);
+
+        // Reset pagination
         this.calculateTotalPages();
         this.currentPage = 1;
     }
 
-    limpiarFiltros() {
-        this.filtroTexto.set('');
-        this.filtroFechaInicio.set('');
-        this.filtroFechaFin.set('');
-        this.aplicarFiltros();
+    clearFilters() {
+        this.filterText.set('');
+        this.filterStartDate.set('');
+        this.filterEndDate.set('');
+        this.applyFilters();
     }
 
     // =============================================================
-    // LÓGICA DE PAGINACIÓN
+    // PAGINATION LOGIC
     // =============================================================
     calculateTotalPages() {
-        this.totalPages = Math.ceil(this.ticketsFiltrados().length / this.itemsPerPage) || 1;
+        this.totalPages = Math.ceil(this.filteredTickets().length / this.itemsPerPage) || 1;
     }
 
     getPaginatedTickets(): any[] {
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
         const endIndex = startIndex + this.itemsPerPage;
-        return this.ticketsFiltrados().slice(startIndex, endIndex);
+        return this.filteredTickets().slice(startIndex, endIndex);
     }
 
     goToPage(page: number): void {
@@ -146,22 +148,21 @@ export class MisTicketsComponent implements OnInit {
     }
 
     getPageNumbers(): number[] {
-        // Genera array simple [1, 2, 3...] según totalPages
         return Array.from({ length: this.totalPages }, (_, i) => i + 1);
     }
 
     // =============================================================
-    // UI HELPERS & NAVEGACIÓN
+    // UI HELPERS & NAVIGATION
     // =============================================================
-    verDetalle(ticketId: number): void {
+    viewDetail(ticketId: number): void {
         this.router.navigate(['/inicio/ticket', ticketId]);
     }
 
-    crearTicket() {
+    createTicket() {
         this.router.navigate(['/inicio/crear-ticket']);
     }
 
-    // Clases para el Badge (Fondo y Texto)
+    // Badge background/text class
     getStatusClass(status: string): string {
         const map: any = {
             'abierto': 'bg-blue-50 text-blue-700 border-blue-200',
@@ -174,7 +175,7 @@ export class MisTicketsComponent implements OnInit {
         return map[status.toLowerCase()] || 'bg-slate-50 text-slate-700 border-slate-200';
     }
 
-    // Clases para el Puntito de color dentro del badge
+    // Dot color class inside badge
     getStatusDotClass(status: string): string {
         const map: any = {
             'abierto': 'bg-blue-500',

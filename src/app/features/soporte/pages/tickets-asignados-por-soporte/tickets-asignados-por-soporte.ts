@@ -3,67 +3,72 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
-import { TicketService } from '../../../../core/services/ticket/ticket.service';
-import { AuthService } from '../../../../core/services/auth/auth.service';
+import { TicketService } from '../../../../core/services/ticket.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
-  selector: 'app-tickets-asignados-por-soporte',
+  selector: 'app-tickets-assigned-support',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './tickets-asignados-por-soporte.html',
 })
-export class TicketsAsignadosPorSoporteComponent implements OnInit {
-  
+export class TicketsAssignedBySupportComponent implements OnInit {
+
   // DATA
   tickets = signal<any[]>([]);
-  
+
   // STATES
   loading = signal(false);
   errorMsg = signal('');
 
-  // PAGINACIÓN
+  // PAGINATION
   currentPage = 1;
-  itemsPerPage = 10; 
+  itemsPerPage = 10;
   totalTickets = 0;
 
-  // FILTROS
-  filtroBusqueda: string = '';
-  filtroPrioridad: string = 'todos';
-  filtroEstado: string = 'todos';
-  filtroFechaDesde: string = '';
-  filtroFechaHasta: string = '';
-  
-  // USUARIO
-  usuario: any;
+  // FILTERS
+  filterSearch: string = '';
+  filterPriority: string = 'todos';
+  filterStatus: string = 'todos';
+  filterDateFrom: string = '';
+  filterDateTo: string = '';
+
+  // USER
+  user: any;
 
   constructor(
     private ticketService: TicketService,
     private authService: AuthService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit() {
-    this.usuario = this.authService.getUser();
-    this.cargarTickets();
+    this.user = this.authService.getUser();
+    this.loadTickets();
   }
 
-  get fechaActual(): Date {
+  get currentDate(): Date {
     return new Date();
   }
 
-  cargarTickets() {
+  loadTickets() {
     this.loading.set(true);
     this.errorMsg.set('');
 
-    this.ticketService.getTicketsAsignadosPorSoporte()
+    this.ticketService.getAssignedTickets()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (resp: any) => {
           if (resp?.success) {
             const ticketsData = resp.data?.tickets || [];
-            // Ordenar por defecto por fecha (más reciente primero)
-            ticketsData.sort((a:any, b:any) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime());
-            
+
+            // Sort by most recent first
+            ticketsData.sort(
+              (a: any, b: any) =>
+                new Date(b.fecha_creacion).getTime() -
+                new Date(a.fecha_creacion).getTime()
+            );
+
             this.tickets.set(ticketsData);
             this.totalTickets = ticketsData.length;
           } else {
@@ -76,68 +81,68 @@ export class TicketsAsignadosPorSoporteComponent implements OnInit {
       });
   }
 
-  verDetalle(ticket_id: number): void {
-    this.router.navigate(['/soporte/ticket/', ticket_id]);
+  viewDetail(ticketId: number): void {
+    this.router.navigate(['/soporte/ticket/', ticketId]);
   }
 
   // =========================================================
-  // LÓGICA DE FILTRADO
+  // FILTER LOGIC
   // =========================================================
   getFilteredTickets() {
-    const search = this.filtroBusqueda.toLowerCase().trim();
+    const search = this.filterSearch.toLowerCase().trim();
 
     return this.tickets().filter(t => {
 
-      // 1. Búsqueda General
+      // 1. General Search
       const matchSearch =
         !search ||
         t.asunto.toLowerCase().includes(search) ||
         t.descripcion?.toLowerCase().includes(search) ||
         t.ticket_id.toString().includes(search);
 
-      // 2. Prioridad
-      const matchPrioridad =
-        this.filtroPrioridad === 'todos' ||
-        t.prioridad.toLowerCase() === this.filtroPrioridad;
+      // 2. Priority
+      const matchPriority =
+        this.filterPriority === 'todos' ||
+        t.prioridad.toLowerCase() === this.filterPriority;
 
-      // 3. Estado
-      const matchEstado =
-        this.filtroEstado === 'todos' ||
-        t.estado.toLowerCase() === this.filtroEstado;
+      // 3. Status
+      const matchStatus =
+        this.filterStatus === 'todos' ||
+        t.estado.toLowerCase() === this.filterStatus;
 
-      // 4. Fechas
+      // 4. Date Range
       const fecha = new Date(t.fecha_creacion);
-      
-      const matchFechaDesde =
-        !this.filtroFechaDesde ||
-        fecha >= new Date(this.filtroFechaDesde);
 
-      const matchFechaHasta =
-        !this.filtroFechaHasta ||
-        fecha <= new Date(this.filtroFechaHasta + 'T23:59:59');
+      const matchFrom =
+        !this.filterDateFrom ||
+        fecha >= new Date(this.filterDateFrom);
 
-      return matchSearch && matchPrioridad && matchEstado && matchFechaDesde && matchFechaHasta;
+      const matchTo =
+        !this.filterDateTo ||
+        fecha <= new Date(this.filterDateTo + 'T23:59:59');
+
+      return matchSearch && matchPriority && matchStatus && matchFrom && matchTo;
     });
   }
 
-  get nombreUnidad(): string {
-    if (!this.usuario) return 'Mi Unidad';
-    return this.usuario.nombre_unidad || this.usuario.unidad || 'Soporte Técnico';
+  get unitName(): string {
+    if (!this.user) return 'Mi Unidad';
+    return this.user.nombre_unidad || this.user.unidad || 'Soporte Técnico';
   }
 
-  resetFiltros() {
-    this.filtroBusqueda = '';
-    this.filtroPrioridad = 'todos';
-    this.filtroEstado = 'todos';
-    this.filtroFechaDesde = '';
-    this.filtroFechaHasta = '';
+  resetFilters() {
+    this.filterSearch = '';
+    this.filterPriority = 'todos';
+    this.filterStatus = 'todos';
+    this.filterDateFrom = '';
+    this.filterDateTo = '';
     this.currentPage = 1;
   }
 
   // =========================================================
-  // PAGINACIÓN
+  // PAGINATION
   // =========================================================
-  
+
   get totalPages(): number {
     return Math.ceil(this.totalTickets / this.itemsPerPage) || 1;
   }
@@ -197,17 +202,17 @@ export class TicketsAsignadosPorSoporteComponent implements OnInit {
   }
 
   // =========================================================
-  // ESTILOS
+  // STYLES
   // =========================================================
 
   getPriorityClass(prioridad: string) {
     if (!prioridad) return 'bg-slate-100 text-slate-600 border-slate-200';
     const p = prioridad.toLowerCase();
-    
+
     if (p === 'alta') return 'bg-red-50 text-red-700 border-red-200';
     if (p === 'media') return 'bg-amber-50 text-amber-700 border-amber-200';
     if (p === 'baja') return 'bg-green-50 text-green-700 border-green-200';
-    
+
     return 'bg-slate-100 text-slate-600 border-slate-200';
   }
 

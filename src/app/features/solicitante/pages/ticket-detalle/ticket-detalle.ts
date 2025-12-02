@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { TicketService } from '../../../../core/services/ticket/ticket.service';
+import { TicketService } from '../../../../core/services/ticket.service';
 
 @Component({
     selector: 'app-ticket-detalle',

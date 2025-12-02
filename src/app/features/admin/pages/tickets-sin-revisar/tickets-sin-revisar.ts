@@ -2,43 +2,43 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import { TicketService } from '../../../../core/services/ticket/ticket.service';
+import { TicketService } from '../../../../core/services/ticket.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-admin-tickets-sin-revisar',
+    selector: 'app-admin-tickets-unreviewed',
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './tickets-sin-revisar.html',
 })
-export class AdminTicketsSinRevisarComponent implements OnInit {
+export class AdminTicketsUnreviewedComponent implements OnInit {
 
     // =========================================
-    // Signals internas (estado reactivo real)
+    // Reactive signals (real reactive state)
     // =========================================
     tickets = signal<any[]>([]);
     loading = signal<boolean>(false);
     errorMsg = signal<string>('');
-    fechaActual = signal(new Date());
+    currentDate = signal(new Date());
 
     // =========================================
-    // Propiedades normales (ngModel bind)
+    // Regular properties (for ngModel binding)
     // =========================================
-    filtroBusqueda = '';
-    filtroOrigen = 'todos';
-    filtroEvento = 'todos';
-    filtroFechaDesde = '';
-    filtroFechaHasta = '';
+    filterSearch = '';
+    filterOrigin = 'todos';
+    filterEvent = 'todos';
+    filterDateFrom = '';
+    filterDateTo = '';
 
-    // Signals espejo (reactivo real)
-    _filtroBusqueda = signal('');
-    _filtroOrigen = signal('todos');
-    _filtroEvento = signal('todos');
-    _filtroFechaDesde = signal('');
-    _filtroFechaHasta = signal('');
+    // Mirror reactive signals (proper reactive state)
+    _filterSearch = signal('');
+    _filterOrigin = signal('todos');
+    _filterEvent = signal('todos');
+    _filterDateFrom = signal('');
+    _filterDateTo = signal('');
 
     // =========================================
-    // Paginación
+    // Pagination
     // =========================================
     currentPage = 1;
     itemsPerPage = 10;
@@ -47,23 +47,23 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
     constructor(
         private ticketService: TicketService,
         private router: Router,
-    ) { }
+    ) {}
 
     ngOnInit() {
-        this.cargarTickets();
+        this.loadTickets();
 
-        // Timer para refrescar hora
-        setInterval(() => this.fechaActual.set(new Date()), 1000);
+        // Timer to refresh clock UI
+        setInterval(() => this.currentDate.set(new Date()), 1000);
     }
 
     // =========================================
-    // Cargar tickets iniciales
+    // Load initial tickets
     // =========================================
-    cargarTickets() {
+    loadTickets() {
         this.loading.set(true);
         this.errorMsg.set('');
 
-        this.ticketService.getTicketsSinRevisar()
+        this.ticketService.getUnreviewedTickets()
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
                 next: (resp: any) => {
@@ -82,19 +82,19 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
     }
 
     // =========================================
-    // Eventos ngModel → signals
+    // ngModel handlers → signals
     // =========================================
-    onFiltroBusquedaChange(v: string) { this.filtroBusqueda = v; this._filtroBusqueda.set(v); }
-    onFiltroOrigenChange(v: string) { this.filtroOrigen = v; this._filtroOrigen.set(v); }
-    onFiltroEventoChange(v: string) { this.filtroEvento = v; this._filtroEvento.set(v); }
-    onFiltroFechaDesdeChange(v: string) { this.filtroFechaDesde = v; this._filtroFechaDesde.set(v); }
-    onFiltroFechaHastaChange(v: string) { this.filtroFechaHasta = v; this._filtroFechaHasta.set(v); }
+    onFilterSearchChange(v: string) { this.filterSearch = v; this._filterSearch.set(v); }
+    onFilterOriginChange(v: string) { this.filterOrigin = v; this._filterOrigin.set(v); }
+    onFilterEventChange(v: string) { this.filterEvent = v; this._filterEvent.set(v); }
+    onFilterDateFromChange(v: string) { this.filterDateFrom = v; this._filterDateFrom.set(v); }
+    onFilterDateToChange(v: string) { this.filterDateTo = v; this._filterDateTo.set(v); }
 
     // =========================================
-    // Filtrado y Paginación
+    // Filtering + pagination logic
     // =========================================
     getFilteredTickets() {
-        const search = this._filtroBusqueda().toLowerCase().trim();
+        const search = this._filterSearch().toLowerCase().trim();
 
         return this.tickets().filter(t => {
             const matchSearch =
@@ -103,25 +103,25 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
                 t.usuario_nombre.toLowerCase().includes(search) ||
                 t.ticket_id.toString().includes(search);
 
-            const matchOrigen =
-                this._filtroOrigen() === 'todos' ||
-                t.origen?.toLowerCase() === this._filtroOrigen();
+            const matchOrigin =
+                this._filterOrigin() === 'todos' ||
+                t.origen?.toLowerCase() === this._filterOrigin();
 
-            const matchEvento =
-                this._filtroEvento() === 'todos' ||
-                t.evento?.toLowerCase() === this._filtroEvento();
+            const matchEvent =
+                this._filterEvent() === 'todos' ||
+                t.evento?.toLowerCase() === this._filterEvent();
 
-            const fechaTicket = new Date(t.fecha_creacion);
+            const ticketDate = new Date(t.fecha_creacion);
 
-            const matchDesde =
-                !this._filtroFechaDesde() ||
-                fechaTicket >= new Date(this._filtroFechaDesde());
+            const matchFrom =
+                !this._filterDateFrom() ||
+                ticketDate >= new Date(this._filterDateFrom());
 
-            const matchHasta =
-                !this._filtroFechaHasta() ||
-                fechaTicket <= new Date(this._filtroFechaHasta() + 'T23:59:59');
+            const matchTo =
+                !this._filterDateTo() ||
+                ticketDate <= new Date(this._filterDateTo() + 'T23:59:59');
 
-            return matchSearch && matchOrigen && matchEvento && matchDesde && matchHasta;
+            return matchSearch && matchOrigin && matchEvent && matchFrom && matchTo;
         });
     }
 
@@ -133,29 +133,29 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
         return filtered.slice(start, start + this.itemsPerPage);
     }
 
-    resetFiltros() {
-        this.filtroBusqueda = '';
-        this.filtroOrigen = 'todos';
-        this.filtroEvento = 'todos';
-        this.filtroFechaDesde = '';
-        this.filtroFechaHasta = '';
+    resetFilters() {
+        this.filterSearch = '';
+        this.filterOrigin = 'todos';
+        this.filterEvent = 'todos';
+        this.filterDateFrom = '';
+        this.filterDateTo = '';
 
-        this._filtroBusqueda.set('');
-        this._filtroOrigen.set('todos');
-        this._filtroEvento.set('todos');
-        this._filtroFechaDesde.set('');
-        this._filtroFechaHasta.set('');
+        this._filterSearch.set('');
+        this._filterOrigin.set('todos');
+        this._filterEvent.set('todos');
+        this._filterDateFrom.set('');
+        this._filterDateTo.set('');
 
         this.currentPage = 1;
     }
 
-    // TrackBy
+    // TrackBy performance helper
     trackByTicketId(index: number, ticket: any) {
         return ticket.ticket_id;
     }
 
     // ===============================
-    // Paginación UI
+    // Pagination UI helpers
     // ===============================
     get totalPages() {
         return Math.ceil(this.totalTickets / this.itemsPerPage) || 1;
@@ -191,7 +191,7 @@ export class AdminTicketsSinRevisarComponent implements OnInit {
         this.currentPage = 1;
     }
 
-    verDetalle(ticket_id: number) {
+    viewDetail(ticket_id: number) {
         this.router.navigate([`/admin/ticket/${ticket_id}/sin-revisar`]);
     }
 }

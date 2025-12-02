@@ -1,0 +1,133 @@
+<div class="mx-auto space-y-6 pb-12 max-w-7xl">
+
+    <div
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex items-center gap-5">
+            <div class="bg-[#002777]/10 p-4 rounded-xl flex items-center justify-center border border-[#002777]/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#002777]" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-[#002777]">Tipos de Evento</h1>
+                <p class="text-slate-500 mt-1">
+                    Gestiona las categorías disponibles para los tickets.
+                </p>
+            </div>
+        </div>
+
+        <button (click)="openCreateModal()"
+            class="group flex items-center gap-2 px-5 py-3 bg-[#002777] text-white rounded-xl shadow-sm hover:bg-[#003da5] hover:shadow-md transition-all active:scale-95">
+            <svg class="h-5 w-5 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span class="font-bold text-sm">Nuevo Tipo</span>
+        </button>
+    </div>
+
+    <div *ngIf="loading() && !showModal()" class="flex flex-col items-center justify-center py-20">
+        <div class="w-10 h-10 border-4 border-[#62CEEA]/30 border-t-[#002777] rounded-full animate-spin"></div>
+        <p class="mt-3 text-sm font-medium text-[#002777]">Sincronizando catálogo...</p>
+    </div>
+
+    <div *ngIf="!loading() && errorMsg()"
+        class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+        <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="text-red-700 font-medium">{{ errorMsg() }}</span>
+    </div>
+
+    <div *ngIf="!loading() && !errorMsg()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div *ngFor="let item of eventTypes()"
+            class="group bg-white rounded-2xl border border-slate-200 p-5 hover:border-[#62CEEA] hover:shadow-md transition-all duration-300 relative overflow-hidden">
+
+            <div
+                class="absolute -right-4 -top-4 w-20 h-20 bg-slate-50 rounded-full group-hover:bg-[#62CEEA]/10 transition-colors duration-300">
+            </div>
+
+            <div class="flex items-start justify-between relative z-10">
+                <div class="flex gap-4">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100 group-hover:border-[#62CEEA]/30 transition-colors">
+                        <span class="font-mono text-sm font-bold text-[#002777]">#{{ item.evento_id }}</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 group-hover:text-[#002777] transition-colors">
+                            {{ item.evento | titlecase }}
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">ID Sistema: {{ item.evento_id }}</p>
+                    </div>
+                </div>
+
+                <button (click)="openEditModal(item)"
+                    class="p-2 text-slate-400 hover:text-[#002777] hover:bg-slate-50 rounded-lg transition-all"
+                    title="Editar evento">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="eventTypes().length === 0"
+            class="col-span-full py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+            <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                </svg>
+            </div>
+            <p class="text-slate-500 font-medium">No hay tipos de eventos registrados.</p>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" (click)="closeModal()"></div>
+
+    <div
+        class="bg-white rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
+
+        <div class="bg-[#002777] p-4 flex items-center justify-between">
+            <h3 class="text-white font-bold text-lg">
+                {{ isEditing() ? 'Editar Tipo de Evento' : 'Nuevo Tipo de Evento' }}
+            </h3>
+            <button (click)="closeModal()" class="text-white/70 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="save()" class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-[#002777] mb-1 ml-1 uppercase">Nombre del Evento</label>
+                <input type="text" formControlName="evento" placeholder="Ej. Mantenimiento Preventivo"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] transition-all bg-slate-50 focus:bg-white">
+
+                <div *ngIf="form.get('evento')?.touched && form.get('evento')?.invalid"
+                    class="mt-1 text-xs text-red-500 font-bold ml-1">
+                    El nombre es requerido (mínimo 3 caracteres).
+                </div>
+            </div>
+
+            <div class="pt-4 flex gap-3">
+                <button type="button" (click)="closeModal()" [disabled]="saving()"
+                    class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors disabled:opacity-50">
+                    Cancelar
+                </button>
+                <button type="submit" [disabled]="form.invalid || saving()"
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-[#002777] text-white font-bold hover:bg-[#003da5] shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+                    <div *ngIf="saving()"
+                        class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>{{ saving() ? 'Guardando...' : 'Guardar' }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

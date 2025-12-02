@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription, interval } from 'rxjs';
 import { startWith, switchMap, filter } from 'rxjs/operators';
-import { TicketLogService } from '../../../core/services/ticket-log/ticket-log.service';
+import { TicketLogService } from '../../../core/services/ticket-log.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export interface MovimientoLog {

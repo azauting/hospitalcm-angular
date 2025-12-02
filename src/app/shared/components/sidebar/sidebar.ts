@@ -1,7 +1,7 @@
 import { Component, OnInit, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
-import { AuthService } from '../../../core/services/auth/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -75,10 +75,12 @@ export class SidebarComponent implements OnInit {
     goDashboard() { this.router.navigate(['/admin']); }
     goTicketsSinRevisar() { this.router.navigate(['/admin/tickets/sin-revisar']); }
     goTicketsRevisados() { this.router.navigate(['/admin/tickets/revisados']); }
+    goTicketsCerrados() { this.router.navigate(['/admin/tickets/cerrados']); }
     goCrearTicket() { this.router.navigate(['/admin/crear-ticket']); }
     goUsuarios() { this.router.navigate(['/admin/solicitantes']); }
     goSoportes() { this.router.navigate(['/admin/soportes']); }
     goUbicaciones() { this.router.navigate(['/admin/ubicaciones']); }
+    goTiposEvento() { this.router.navigate(['/admin/tipos-evento']); }
     goSoporteTickets() { this.router.navigate(['/soporte']); }
     goSoporteMisTickets() { this.router.navigate(['/soporte/mis-tickets']); }
     goSoporteCrearTicket() { this.router.navigate(['/soporte/crear-ticket']); }

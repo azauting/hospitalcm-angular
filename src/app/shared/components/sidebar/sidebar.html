@@ -23,7 +23,7 @@
 
         <ng-container *ngIf="usuario?.nombre_rol === 'administrador'">
 
-            <div class="px-3 mb-2 mt-2 text-xs font-bold text-white/40 uppercase tracking-widest">Gestión</div>
+            <div class="px-3 mb-2 mt-2 text-xs font-bold text-white/40 uppercase tracking-widest">Analítica</div>
 
             <button (click)="goDashboard()"
                 class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
@@ -33,6 +33,18 @@
                         d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
                 <span class="font-medium text-sm">Dashboard</span>
+            </button>
+
+            <div class="px-3 mb-2 mt-2 text-xs font-bold text-white/40 uppercase tracking-widest">Tickets</div>
+
+            <button (click)="goCrearTicket()"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+                [class]="getNavButtonClass('/admin/crear-ticket')">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="font-medium text-sm">Crear Ticket</span>
             </button>
 
             <button (click)="goTicketsSinRevisar()"
@@ -52,20 +64,22 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span class="font-medium text-sm">Todos los Tickets</span>
+                <span class="font-medium text-sm">Tickets</span>
             </button>
 
-            <div class="px-3 mb-2 mt-6 text-xs font-bold text-white/40 uppercase tracking-widest">Operaciones</div>
-
-            <button (click)="goCrearTicket()"
+            <button (click)="goTicketsCerrados()"
                 class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
-                [class]="getNavButtonClass('/admin/crear-ticket')">
+                [class]="getNavButtonClass('/admin/tickets/cerrados')">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span class="font-medium text-sm">Crear Ticket</span>
+                <span class="font-medium text-sm">Tickets Cerrados</span>
             </button>
+
+            <div class="px-3 mb-2 mt-6 text-xs font-bold text-white/40 uppercase tracking-widest">Gestión</div>
+
+
 
             <button (click)="goUsuarios()"
                 class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
@@ -95,6 +109,17 @@
                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <span class="font-medium text-sm">Ubicaciones</span>
+            </button>
+            <button (click)="goTiposEvento()"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+                [class]="getNavButtonClass('/admin/tipos-evento')">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-6a2 2 0 012-2h6M9 17H5a2 2 0 01-2-2v-6a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8" />
+                </svg>
+                <span class="font-medium text-sm">Tipos de Evento</span>
             </button>
         </ng-container>
 
