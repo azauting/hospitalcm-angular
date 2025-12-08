@@ -25,7 +25,6 @@ import { TicketsCerradosComponent } from './shared/pages/tickets-cerrados/ticket
 
 
 export const routes: Routes = [
-    // rutas de autenticación
     {
         path: '',
         redirectTo: 'login',
