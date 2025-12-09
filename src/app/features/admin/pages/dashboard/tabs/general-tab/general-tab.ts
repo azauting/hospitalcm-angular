@@ -23,12 +23,16 @@ export class GeneralTabComponent implements OnInit {
     openTickets = signal<number | null>(null);
     inProcess = signal<number | null>(null);
 
+    // SLA signals
+    slaGlobal = signal<number | null>(null);
+    slaPrioridades = signal<any[]>([]);
+
     // ApexCharts configs
     lineOptions = signal<any>(null);
-    radialOptions = signal<any>(null);
+    mttrLineOptions = signal<any>(null);
     treemapOptions = signal<any>(null);
 
-    constructor(private dashboard: DashboardService) {}
+    constructor(private dashboard: DashboardService) { }
 
     ngOnInit() {
         this.loadData();
@@ -45,7 +49,8 @@ export class GeneralTabComponent implements OnInit {
                 inProcessRes,
                 resolvedPerMonthRes,
                 mttrMonthlyRes,
-                treemapRes
+                treemapRes,
+                slaRes
             ] = await Promise.all([
                 this.dashboard.getTicketsCreatedToday().toPromise(),
                 this.dashboard.getTicketsClosedToday().toPromise(),
@@ -54,6 +59,7 @@ export class GeneralTabComponent implements OnInit {
                 this.dashboard.getResolvedPerMonth().toPromise(),
                 this.dashboard.getMonthlyMTTR().toPromise(),
                 this.dashboard.getLocationsTreemap().toPromise(),
+                this.dashboard.getSLAData().toPromise(),
             ]);
 
             // ===== KPI VALUES =====
@@ -62,6 +68,16 @@ export class GeneralTabComponent implements OnInit {
             this.openTickets.set(openTicketsRes!.data);
             this.inProcess.set(inProcessRes!.data);
 
+            // ===== SLA VALUES =====
+            this.slaGlobal.set(slaRes!.data.cumplimiento_global);
+            this.slaPrioridades.set(
+                slaRes!.data.prioridades.map((p: any) => ({
+                    ...p,
+                    estado: p.mttr_horas <= p.meta ? 'Cumplido' : 'Incumplido'
+                }))
+            );
+
+
             // ===== LINE CHART (Resueltos por Mes) =====
             const resolvedMonth = resolvedPerMonthRes!.data;
 
@@ -69,24 +85,33 @@ export class GeneralTabComponent implements OnInit {
                 chart: { type: 'line', height: 300 },
                 series: [
                     {
-                        name: 'Resueltos', // visible string → stays Spanish
+                        name: 'Resueltos',
                         data: resolvedMonth.map(x => x.resueltos),
                     }
                 ],
-                xaxis: { categories: resolvedMonth.map(x => x.mes) }, // months stay in Spanish
+                xaxis: { categories: resolvedMonth.map(x => x.mes) },
                 stroke: { curve: 'smooth' }
             });
 
-            // ===== RADIAL CHART (MTTR Mensual) =====
-            const mttr = mttrMonthlyRes!.data[0];
+            // ===== LINE CHART (MTTR Mensual) =====
+            const mttrData = mttrMonthlyRes!.data;
 
-            this.radialOptions.set({
-                chart: { type: 'radialBar', height: 300 },
-                series: [parseFloat(mttr.mttr_horas)],
-                labels: [mttr.mes], // month stays Spanish
-                plotOptions: {
-                    radialBar: {
-                        hollow: { size: '60%' }
+            this.mttrLineOptions.set({
+                chart: { type: 'line', height: 300, toolbar: { show: false } },
+                series: [
+                    {
+                        name: 'MTTR (hrs)',
+                        data: mttrData.map(x => parseFloat(x.mttr_horas))
+                    }
+                ],
+                xaxis: {
+                    categories: mttrData.map(x => x.mes)
+                },
+                stroke: { curve: 'smooth', width: 3 },
+                markers: { size: 4 },
+                tooltip: {
+                    y: {
+                        formatter: (val: number) => `${val} horas`
                     }
                 }
             });
@@ -97,9 +122,9 @@ export class GeneralTabComponent implements OnInit {
             this.treemapOptions.set({
                 chart: { type: 'treemap', height: 350 },
                 series: treeData.map(group => ({
-                    name: group.name, // category name stays Spanish
+                    name: group.name,
                     data: group.data.map(item => ({
-                        x: item.ubicacion, // ubicacion stays Spanish
+                        x: item.ubicacion,
                         y: item.tickets
                     }))
                 }))

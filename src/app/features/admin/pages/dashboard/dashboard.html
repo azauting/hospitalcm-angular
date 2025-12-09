@@ -12,7 +12,7 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-2xl font-bold text-[#002777]">Centro de Comando</h1>
+                <h1 class="text-2xl font-bold text-[#002777]">Dashboard</h1>
                 <p class="text-slate-500 text-sm">Monitoreo de KPIs, SLA y Rendimiento Operativo</p>
             </div>
         </div>
@@ -56,15 +56,6 @@
                 Por Unidades
             </button>
 
-            <button (click)="currentTab.set('sla')" [class]="getTabClass('sla')"
-                class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
-                <svg [class]="getIconClass('sla')" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                SLA y KPIs
-            </button>
 
             <button (click)="currentTab.set('equipo')" [class]="getTabClass('equipo')"
                 class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200">
@@ -87,7 +78,6 @@
 
         <app-general-tab *ngIf="currentTab() === 'general'"></app-general-tab>
         <app-unidades-tab *ngIf="currentTab() === 'unidades'"></app-unidades-tab>
-        <app-sla-tab *ngIf="currentTab() === 'sla'"></app-sla-tab>
         <app-equipo-tab *ngIf="currentTab() === 'equipo'"></app-equipo-tab>
 
     </div>

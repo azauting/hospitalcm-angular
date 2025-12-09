@@ -26,16 +26,78 @@
         </div>
 
         <div class="bg-white p-5 rounded-xl border shadow-sm">
-            <p class="text-xs text-slate-400 uppercase font-bold">Backlog Abierto</p>
+            <p class="text-xs text-slate-400 uppercase font-bold">Tickets abiertos</p>
             <h2 class="text-3xl font-bold text-red-600 mt-1">{{ openTickets() }}</h2>
         </div>
 
     </div>
 
+    <!-- ======================= SLA GLOBAL + MTTR POR PRIORIDAD ======================= -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- SLA GLOBAL -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
+            <div class="relative w-32 h-32 flex items-center justify-center mb-4">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <path class="text-slate-100"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none"
+                        stroke="currentColor" stroke-width="3" />
+                    <path class="text-[#62CEEA]" [attr.stroke-dasharray]="slaGlobal() + ', 100'"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none"
+                        stroke="currentColor" stroke-width="3" />
+                </svg>
+                <div class="absolute text-2xl font-bold text-[#002777]">
+                    {{ slaGlobal() | number:'1.0-0' }}%
+                </div>
+            </div>
+
+            <h3 class="font-bold text-slate-700">Cumplimiento SLA Global</h3>
+            <p class="text-xs text-slate-500 mt-1">Meta Objetivo: 100%</p>
+        </div>
+
+
+        <!-- MTTR POR PRIORIDAD -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 col-span-2">
+            <h3 class="font-bold text-[#002777] mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Tiempo Medio de Resolución (MTTR) por Prioridad
+            </h3>
+
+            <table class="w-full text-sm mt-4">
+                <thead>
+                    <tr class="text-left text-slate-500 border-b">
+                        <th class="pb-2">Prioridad</th>
+                        <th class="pb-2">MTTR (hrs)</th>
+                        <th class="pb-2">SLA Máx (hrs)</th>
+                        <th class="pb-2">Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let p of slaPrioridades()" class="border-b last:border-0">
+                        <td class="py-2 font-semibold text-slate-700">{{ p.prioridad }}</td>
+                        <td class="py-2">{{ p.mttr_horas }}</td>
+                        <td class="py-2">{{ p.meta }}</td>
+                        <td class="py-2 font-bold" [ngClass]="{
+                        'text-green-600': p.estado === 'Cumplido',
+                        'text-red-600': p.estado === 'Incumplido'
+                    }">
+                            {{ p.estado }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <!-- ===================== LINE CHART ===================== -->
         <div class="bg-white p-6 rounded-xl shadow-sm border">
-            <h3 class="text-lg font-bold text-[#002777] mb-4">Resueltos por Mes</h3>
+            <h3 class="text-lg font-bold text-[#002777] mb-4">Tickets Resueltos por Mes</h3>
 
             <apx-chart *ngIf="lineOptions()" [series]="lineOptions().series" [chart]="lineOptions().chart"
                 [xaxis]="lineOptions().xaxis" [stroke]="lineOptions().stroke">
@@ -43,19 +105,20 @@
         </div>
 
 
-        <!-- ===================== RADIAL CHART (MTTR) ===================== -->
+        <!-- ===================== LINE CHART (MTTR Mensual) ===================== -->
         <div class="bg-white p-6 rounded-xl shadow-sm border">
             <h3 class="text-lg font-bold text-[#002777] mb-4">MTTR Mensual</h3>
 
-            <apx-chart *ngIf="radialOptions()" [series]="radialOptions().series" [chart]="radialOptions().chart"
-                [labels]="radialOptions().labels" [plotOptions]="radialOptions().plotOptions">
+            <apx-chart *ngIf="mttrLineOptions()" [series]="mttrLineOptions().series" [chart]="mttrLineOptions().chart"
+                [xaxis]="mttrLineOptions().xaxis" [stroke]="mttrLineOptions().stroke"
+                [markers]="mttrLineOptions().markers" [tooltip]="mttrLineOptions().tooltip">
             </apx-chart>
         </div>
 
 
         <!-- ===================== TREEMAP ===================== -->
         <div class="bg-white p-6 rounded-xl shadow-sm border col-span-2">
-            <h3 class="text-lg font-bold text-[#002777] mb-4">Incidentes por Ubicación</h3>
+            <h3 class="text-lg font-bold text-[#002777] mb-4">Total de tickets por Ubicación</h3>
 
             <apx-chart *ngIf="treemapOptions()" [series]="treemapOptions().series" [chart]="treemapOptions().chart">
             </apx-chart>

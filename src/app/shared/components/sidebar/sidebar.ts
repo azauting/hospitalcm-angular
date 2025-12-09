@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, inject } from '@angular/core';
+import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -15,13 +15,12 @@ export class SidebarComponent implements OnInit {
     currentRoute = '';
 
     // --- NUEVO: Estado del sidebar ---
-    isSidebarOpen = true;
+    isOpen = signal(true);
 
     constructor(
         public authService: AuthService,
         private router: Router,
     ) {
-        // ... (tu código existente del constructor se mantiene igual)
         this.router.events.pipe(
             filter(event => event instanceof NavigationEnd)
         ).subscribe((event: any) => {
@@ -34,7 +33,12 @@ export class SidebarComponent implements OnInit {
                 this.redirectIfRoleMismatch(user);
             }
         });
+
     }
+    toggleSidebar() {
+        this.isOpen.update(v => !v);
+    }
+
 
     ngOnInit() {
         // ... (tu código existente ngOnInit se mantiene igual)
@@ -44,10 +48,8 @@ export class SidebarComponent implements OnInit {
         }
     }
 
-    // --- NUEVO: Función para alternar el sidebar ---
-    toggleSidebar() {
-        this.isSidebarOpen = !this.isSidebarOpen;
-    }
+
+
 
     // ... (El resto de tus funciones: get usuario, getNavButtonClass, etc. se mantienen igual)
     get usuario() { return this.authService.user(); }
@@ -68,7 +70,7 @@ export class SidebarComponent implements OnInit {
         }
         return parts[0].substring(0, 2).toUpperCase();
     }
-    
+
 
 
     private redirectIfRoleMismatch(user: any) { /*...*/ }

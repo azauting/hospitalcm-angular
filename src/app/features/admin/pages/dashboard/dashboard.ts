@@ -2,7 +2,6 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GeneralTabComponent } from './tabs/general-tab/general-tab';
 import { UnidadesTabComponent } from './tabs/unidades-tab/unidades-tab';
-import { SlaTabComponent } from './tabs/sla-tab/sla-tab';
 import { EquipoTabComponent } from './tabs/equipo-tab/equipo-tab';
 
 @Component({
@@ -12,7 +11,6 @@ import { EquipoTabComponent } from './tabs/equipo-tab/equipo-tab';
         CommonModule,
         GeneralTabComponent,
         UnidadesTabComponent,
-        SlaTabComponent,
         EquipoTabComponent
     ],
     templateUrl: './dashboard.html',

@@ -59,7 +59,7 @@ export class DashboardService {
     constructor(
         private http: HttpClient,
         @Inject('API_URL') private apiUrl: string
-    ) {}
+    ) { }
 
     // ===== KPI NUMERIC =====
 
@@ -110,6 +110,40 @@ export class DashboardService {
     getLocationsTreemap() {
         return this.http.get<TreemapResponse>(
             `${this.apiUrl}/api/analytics/ubicaciones/treemap`,
+            { withCredentials: true }
+        );
+    }
+
+    getSLAData() {
+        return this.http.get<any>(
+            `${this.apiUrl}/api/analytics/sla-prioridades`,
+            { withCredentials: true }
+        );
+    }
+
+    getUnidadesMes(year: number, month: number) {
+        return this.http.get<any>(
+            `${this.apiUrl}/api/analytics/unidades/mes?year=${year}&month=${month}`,
+            { withCredentials: true }
+        );
+    }
+
+    getUnidadesAnual(year: number) {
+        return this.http.get<any>(
+            `${this.apiUrl}/api/analytics/unidades/anual?year=${year}`,
+            { withCredentials: true }
+        );
+    }
+
+    getAvailableYears() {
+        return this.http.get<any>(
+            `${this.apiUrl}/api/analytics/years`,
+            { withCredentials: true }
+        );
+    }
+    getRendimientoEquipo(year: number, month: number) {
+        return this.http.get<any>(
+            `${this.apiUrl}/api/analytics/rendimiento-por-unidad?year=${year}&month=${month}`,
             { withCredentials: true }
         );
     }
