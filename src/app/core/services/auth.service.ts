@@ -1,12 +1,19 @@
 import { Inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
+
+export interface CreateUserPayload {
+    nombre_completo: string;
+    correo: string;
+    contrasena: string;
+    rol_id: number;
+    unidad_id?: number | null;
+}
 @Injectable({
     providedIn: 'root',
 })
+
 export class AuthService {
-
-
     user = signal<any>(null);
 
     constructor(private http: HttpClient,
@@ -52,5 +59,13 @@ export class AuthService {
 
     isLoggedIn() {
         return this.user() !== null;
+    }
+    createUser(payload: CreateUserPayload) {
+        console.log('Llamando a createUser con payload:', payload);
+        return this.http.post(
+            `${this.apiUrl}/api/new-user`,
+            payload,
+            { withCredentials: true }
+        );
     }
 }

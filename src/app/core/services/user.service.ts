@@ -8,6 +8,7 @@ export interface UpdateUserPayload {
     activo?: number;
 }
 
+
 @Injectable({
     providedIn: 'root'
 })
@@ -59,5 +60,5 @@ export class UserService {
             `${this.apiUrl}/api/user/soportes/disponibles`,
             { withCredentials: true }
         );
-    }
+    }   
 }

@@ -12,6 +12,7 @@ import { TicketsAssignedBySupportComponent } from './features/soporte/pages/tick
 import { UsuariosSoportesComponent } from './features/admin/pages/usuarios-soportes/usuarios-soportes';
 import { LocationsComponent} from './features/admin/pages/ubicaciones/ubicaciones';
 import { EventTypeComponent } from './features/admin/pages/tipo_evento/tipo-evento';
+import { CreateUserComponent } from './features/admin/pages/crear-usuario/crear-usuario';
 // layouts
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { SoporteLayoutComponent } from './layouts/soporte-layout/soporte-layout.component';
@@ -69,6 +70,7 @@ export const routes: Routes = [
             { path: 'soportes', component: UsuariosSoportesComponent },
             { path: 'ubicaciones', component: LocationsComponent },
             { path: 'tipos-evento', component: EventTypeComponent },
+            { path: 'crear-usuario', component: CreateUserComponent },
         ]
     },
 ];

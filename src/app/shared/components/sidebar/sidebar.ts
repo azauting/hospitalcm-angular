@@ -79,6 +79,7 @@ export class SidebarComponent implements OnInit {
     goTicketsRevisados() { this.router.navigate(['/admin/tickets/revisados']); }
     goTicketsCerrados() { this.router.navigate(['/admin/tickets/cerrados']); }
     goCrearTicket() { this.router.navigate(['/admin/crear-ticket']); }
+    goCreateUser() { this.router.navigate(['/admin/crear-usuario']); }
     goUsuarios() { this.router.navigate(['/admin/solicitantes']); }
     goSoportes() { this.router.navigate(['/admin/soportes']); }
     goUbicaciones() { this.router.navigate(['/admin/ubicaciones']); }

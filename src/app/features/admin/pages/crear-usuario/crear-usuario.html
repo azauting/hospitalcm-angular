@@ -1,0 +1,75 @@
+<div class="mx-auto max-w-xl bg-white shadow-sm border border-slate-200 rounded-2xl p-8 space-y-6">
+
+    <div class="flex items-center gap-4 mb-4">
+        <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+            <svg class="h-6 w-6 text-[#002777]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4.354a4 4 0 110 7.292M12 4.354V1m0 3.354a4 4 0 100 7.292m0-7.292a4 4 0 010 7.292M3 20h18a2 2 0 002-2v-1a8 8 0 10-16 0v1a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <div>
+            <h1 class="text-xl font-bold text-[#002777]">Crear Usuario</h1>
+            <p class="text-slate-500 text-sm">Registrar un nuevo usuario del sistema</p>
+        </div>
+    </div>
+
+    <!-- Nombre completo -->
+    <div>
+        <label class="text-sm font-semibold text-slate-600">Nombre completo *</label>
+        <input type="text" [ngModel]="nombre_completo()" (ngModelChange)="nombre_completo.set($event)"
+            class="w-full p-3 border rounded-xl mt-1 text-sm border-slate-300 focus:ring-2 focus:ring-[#62CEEA]"
+            placeholder="Ej: Juan Pérez">
+    </div>
+
+    <!-- Correo -->
+    <div>
+        <label class="text-sm font-semibold text-slate-600">Correo *</label>
+        <input type="email" [ngModel]="correo()" (ngModelChange)="correo.set($event)"
+            class="w-full p-3 border rounded-xl mt-1 text-sm border-slate-300 focus:ring-2 focus:ring-[#62CEEA]"
+            placeholder="usuario@hospital.cl">
+    </div>
+
+    <!-- Contraseña -->
+    <div>
+        <label class="text-sm font-semibold text-slate-600">Contraseña *</label>
+        <input type="password" [ngModel]="contrasena()" (ngModelChange)="contrasena.set($event)"
+            class="w-full p-3 border rounded-xl mt-1 text-sm border-slate-300 focus:ring-2 focus:ring-[#62CEEA]"
+            placeholder="********">
+    </div>
+
+    <!-- Rol -->
+    <div>
+        <label class="text-sm font-semibold text-slate-600">Rol *</label>
+        <select [ngModel]="rol_id()" (ngModelChange)="rol_id.set($event !== '' ? +$event : null)"
+            class="w-full p-3 border rounded-xl mt-1 text-sm border-slate-300 bg-white">
+
+            <option value="" disabled selected>Seleccione rol...</option>
+            <option value="1">Solicitante</option>
+            <option value="2">Soporte</option>
+            <option value="3">Administrador</option>
+        </select>
+    </div>
+
+    <!-- Unidad (solo si el rol es diferente de solicitante) -->
+    <div *ngIf="rol_id() !== 1 && rol_id() !== null">
+        <label class="text-sm font-semibold text-slate-600">Unidad</label>
+
+        <select [ngModel]="unidad_id()" (ngModelChange)="unidad_id.set($event !== '' ? +$event : null)"
+            class="w-full p-3 border rounded-xl mt-1 text-sm border-slate-300 bg-white">
+
+            <option value="">Seleccione unidad...</option>
+            <option value="1">Infraestructura</option>
+            <option value="2">Soporte Técnico</option>
+            <option value="3">Desarrollo</option>
+        </select>
+    </div>
+
+    <!-- Botón de crear -->
+    <div class="pt-4 flex justify-end">
+        <button (click)="createUser()" [disabled]="loading()"
+            class="px-6 py-2 bg-[#002777] text-white rounded-xl shadow hover:bg-[#001d5c] transition text-sm font-bold disabled:opacity-40">
+            {{ loading() ? 'Creando...' : 'Crear Usuario' }}
+        </button>
+    </div>
+
+</div>
