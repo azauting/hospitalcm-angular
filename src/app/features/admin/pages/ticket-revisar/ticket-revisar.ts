@@ -34,7 +34,7 @@ export class AdminTicketReviewComponent implements OnInit {
     // ============================
     unidad_id = signal<number | null>(null);
     prioridad_id = signal<number | null>(null);
-    estado_id = signal<number | null>(null); // backend may require this
+    estado_id = signal<number | null>(null); 
 
     constructor(
         private route: ActivatedRoute,
