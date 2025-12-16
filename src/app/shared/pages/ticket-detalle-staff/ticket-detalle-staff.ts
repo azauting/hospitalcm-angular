@@ -56,6 +56,10 @@ export class TicketDetailStaff implements OnInit {
         this.resolveUserAndLoadTicket(id);
     }
 
+
+    get usuario() {
+        return this.authService.user();
+    }
     // Get user first, then load ticket
     private resolveUserAndLoadTicket(ticketId: number) {
         const user = this.authService.getUser();
@@ -200,6 +204,17 @@ export class TicketDetailStaff implements OnInit {
     }
 
     // --- Helpers ---
+
+    puedeCerrarTicket(ticket: any, detail: any): boolean {
+        if (!ticket || !detail || !this.currentUser) return false;
+
+        return (
+            this.currentUser.rol === 'soporte' &&
+            ticket.estado !== 'cerrado' &&
+            detail.soporte_asignado === true &&
+            detail.soporte_id === this.currentUser.usuario_id
+        );
+    }
 
     goBack() {
         const route = this.currentUser?.rol === 'soporte'

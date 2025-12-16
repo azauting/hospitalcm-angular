@@ -14,7 +14,6 @@ export class SidebarComponent implements OnInit {
 
     currentRoute = '';
 
-    // --- NUEVO: Estado del sidebar ---
     isOpen = signal(true);
 
     constructor(
@@ -41,7 +40,6 @@ export class SidebarComponent implements OnInit {
 
 
     ngOnInit() {
-        // ... (tu código existente ngOnInit se mantiene igual)
         this.currentRoute = this.router.url;
         if (!this.authService.getUser()) {
             this.authService.refreshUser();
@@ -50,8 +48,6 @@ export class SidebarComponent implements OnInit {
 
 
 
-
-    // ... (El resto de tus funciones: get usuario, getNavButtonClass, etc. se mantienen igual)
     get usuario() { return this.authService.user(); }
 
     getNavButtonClass(route: string): string {

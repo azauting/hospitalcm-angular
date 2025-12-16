@@ -41,7 +41,7 @@ export class TicketService {
     constructor(
         private http: HttpClient,
         @Inject('API_URL') private apiUrl: string
-    ) {}
+    ) { }
 
     // ============================
     // CREATE TICKET
@@ -195,6 +195,13 @@ export class TicketService {
     getClosedTickets() {
         return this.http.get(
             `${this.apiUrl}/api/tickets/cerrados`,
+            { withCredentials: true }
+        );
+    }
+    cancelTicket(ticketId: number) {
+        return this.http.patch(
+            `${this.apiUrl}/api/tickets/${ticketId}/cancel`,
+            {},
             { withCredentials: true }
         );
     }

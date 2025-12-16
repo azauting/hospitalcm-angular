@@ -8,7 +8,8 @@
     <div *ngIf="!loading() && errorMsg()" class="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
         <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-3">
             <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
         </div>
         <h3 class="text-lg font-medium text-red-800">No pudimos cargar el ticket</h3>
@@ -18,7 +19,7 @@
     <div *ngIf="!loading() && ticket()" class="space-y-6">
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            
+
             <div class="bg-[#002777] px-6 py-6 sm:px-8">
                 <div class="flex items-center gap-3 text-[#62CEEA] text-xs font-bold uppercase tracking-wider mb-2">
                     <span>Ticket #{{ ticket().ticket_id }}</span>
@@ -31,17 +32,27 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-                
+
                 <div class="p-6 flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                        [ngClass]="{
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" [ngClass]="{
                             'bg-blue-50 text-blue-600': ticket().estado === 'nuevo' || ticket().estado === 'abierto',
                             'bg-amber-50 text-amber-600': ticket().estado === 'en proceso' || ticket().estado === 'en_proceso',
                             'bg-emerald-50 text-emerald-600': ticket().estado === 'resuelto' || ticket().estado === 'cerrado'
                         }">
-                        <svg *ngIf="ticket().estado === 'nuevo' || ticket().estado === 'abierto'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <svg *ngIf="ticket().estado === 'en proceso' || ticket().estado === 'en_proceso'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                        <svg *ngIf="ticket().estado === 'resuelto' || ticket().estado === 'cerrado'" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        <svg *ngIf="ticket().estado === 'nuevo' || ticket().estado === 'abierto'" class="w-6 h-6"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <svg *ngIf="ticket().estado === 'en proceso' || ticket().estado === 'en_proceso'"
+                            class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                        <svg *ngIf="ticket().estado === 'resuelto' || ticket().estado === 'cerrado'" class="w-6 h-6"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
                     </div>
                     <div>
                         <p class="text-xs text-slate-500 font-bold uppercase tracking-wide">Estado Actual</p>
@@ -50,20 +61,22 @@
                 </div>
 
                 <div class="p-6 flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0 text-slate-400">
+                    <div
+                        class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0 text-slate-400">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </div>
                     <div>
                         <p class="text-xs text-slate-500 font-bold uppercase tracking-wide">Técnico Asignado</p>
-                        
+
                         <ng-container *ngIf="detalle()?.soporte_asignado; else noTecnico">
                             <p class="text-sm font-bold text-[#002777]">
                                 {{ detalle().soporte_nombre }}
                             </p>
                         </ng-container>
-                        
+
                         <ng-template #noTecnico>
                             <p class="text-sm text-slate-400 italic">Pendiente de asignación</p>
                         </ng-template>
@@ -72,16 +85,18 @@
             </div>
         </div>
 
-        <div *ngIf="detalle()?.respuesta" class="bg-white rounded-2xl shadow-md border-l-4 border-[#62CEEA] p-6 sm:p-8 animate-fade-in ring-1 ring-slate-900/5">
+        <div *ngIf="detalle()?.respuesta"
+            class="bg-white rounded-2xl shadow-md border-l-4 border-[#62CEEA] p-6 sm:p-8 animate-fade-in ring-1 ring-slate-900/5">
             <div class="flex items-center gap-3 mb-4">
                 <div class="p-2 bg-[#62CEEA]/10 rounded-lg">
                     <svg class="w-6 h-6 text-[#002777]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                     </svg>
                 </div>
                 <h2 class="text-lg font-bold text-[#002777]">Respuesta del Soporte</h2>
             </div>
-            
+
             <div class="prose prose-sm prose-slate max-w-none">
                 <p class="text-slate-700 whitespace-pre-line leading-relaxed text-base">
                     {{ detalle().respuesta }}
@@ -97,7 +112,7 @@
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
                 Descripción del problema
             </h3>
-            
+
             <p class="text-slate-700 whitespace-pre-line leading-relaxed">
                 {{ ticket().descripcion }}
             </p>
@@ -112,6 +127,12 @@
                     <span class="text-sm font-medium text-slate-700">{{ ticket().autor_problema }}</span>
                 </div>
             </div>
+        </div>
+        <div *ngIf="puedeCancelarTicket()" class="mt-6 flex justify-end">
+            <button (click)="cancelarTicket()"
+                class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg shadow-sm transition-all">
+                Anular ticket
+            </button>
         </div>
 
     </div>
