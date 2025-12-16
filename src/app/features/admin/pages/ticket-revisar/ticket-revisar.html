@@ -264,7 +264,8 @@
                                 {{ getSupportInitial() }}
                             </div>
                             <div>
-                                <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-0.5">Soporte responsable</p>
+                                <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-0.5">Soporte
+                                    responsable</p>
                                 <p class="text-lg font-bold text-slate-900">{{ detail()?.soporte_nombre }}</p>
                                 <p class="text-xs text-slate-500">{{ detail()?.soporte_unidad || 'Unidad Asignada' }}
                                 </p>
@@ -315,11 +316,8 @@
                 </div>
 
                 <div class="pt-6 mt-6 border-t border-slate-100 flex justify-end">
-                    <button (click)="saveClassification()"
-                        class="w-full sm:w-auto px-8 py-4 bg-[#002777] hover:bg-[#001f5c] text-white font-bold rounded-xl shadow-lg hover:shadow-xl shadow-blue-900/10 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
+                    <button (click)="finalizeReview()"
+                        class="w-full sm:w-auto px-8 py-4 bg-[#002777] hover:bg-[#001f5c] text-white font-bold rounded-xl shadow-lg">
                         Finalizar Proceso Completo
                     </button>
                 </div>
