@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 
+
 import {
     TicketService,
 } from '../../../core/services/ticket.service';
@@ -25,6 +26,7 @@ export class CrearTicketComponent implements OnInit {
     private authService = inject(AuthService);
     private toastr = inject(ToastrService);
 
+
     // User data
     role = '';
 
@@ -41,12 +43,27 @@ export class CrearTicketComponent implements OnInit {
     locations = signal<Location[]>([]);
     loading = signal<boolean>(false);
     loadingLocations = signal<boolean>(false);
+    userIp = signal<string>(''); 
 
     ngOnInit() {
         const user = this.authService.getUser();
         this.role = user?.nombre_rol?.toLowerCase() ?? '';
         this.autor_problema = user?.nombre_completo ?? '';
         this.loadLocations();
+        this.detectarIpBackend();
+    }
+    detectarIpBackend() {
+        this.ticketService.getMyIp().subscribe({
+            next: (resp) => {
+                if (resp.success) {
+                    this.userIp.set(resp.ip);
+                }
+            },
+            error: (err) => {
+                console.error('No se pudo obtener la IP del servidor', err);
+                this.userIp.set('Desconocida');
+            }
+        });
     }
 
     loadLocations() {

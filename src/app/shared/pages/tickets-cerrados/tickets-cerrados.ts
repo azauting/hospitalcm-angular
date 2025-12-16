@@ -21,26 +21,26 @@ export class TicketsCerradosComponent implements OnInit {
     loading = signal(false);
     errorMsg = signal('');
 
-    fechaActual = signal(new Date());
+    currentDate = signal(new Date());
 
     // ============================
-    // PAGINACIÓN
+    // PAGINATION
     // ============================
     currentPage = 1;
     itemsPerPage = 10;
-    totalTickets = 0; // Para mostrar en el header
+    totalTickets = 0;
 
     // ============================
-    // FILTROS
+    // FILTERS
     // ============================
-    filtroBusqueda = '';
-    filtroOrigen = 'todos';
-    filtroEvento = 'todos';
-    filtroFechaDesde = '';
-    filtroFechaHasta = '';
+    filterSearch = '';
+    filterOrigin = 'todos';
+    filterEvent = 'todos';
+    filterDateFrom = '';
+    filterDateTo = '';
 
-    // USUARIO
-    usuario: any;
+    // USER
+    user: any;
 
     constructor(
         private ticketService: TicketService,
@@ -49,32 +49,29 @@ export class TicketsCerradosComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        this.cargarUsuario();
-        this.cargarTickets();
+        this.loadUser();
+        this.loadTickets();
 
-        // Actualizar reloj (opcional, solo visual)
-        setInterval(() => this.fechaActual.set(new Date()), 1000);
+        // Clock update
+        setInterval(() => this.currentDate.set(new Date()), 1000);
     }
 
     // ============================
-    // CARGA DE DATOS
+    // DATA LOADING
     // ============================
-    cargarUsuario() {
+    loadUser() {
         const rawUser = this.authService.getUser();
-        // Manejo robusto de la estructura del usuario
         if (rawUser && rawUser.data && rawUser.data.user) {
-            this.usuario = rawUser.data.user;
+            this.user = rawUser.data.user;
         } else {
-            this.usuario = rawUser;
+            this.user = rawUser;
         }
     }
 
-    cargarTickets() {
+    loadTickets() {
         this.loading.set(true);
         this.errorMsg.set('');
 
-        // Asumimos que tienes este método en tu servicio. 
-        // Si no, agrégalo: return this.http.get(`${this.apiUrl}/tickets/cerrados`, { withCredentials: true });
         this.ticketService.getClosedTickets()
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
@@ -82,8 +79,10 @@ export class TicketsCerradosComponent implements OnInit {
                     if (resp?.success) {
                         const data = resp.data?.tickets || [];
 
-                        // Ordenar por fecha DESCENDENTE (Más reciente arriba) para historial
-                        data.sort((a: any, b: any) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime());
+                        // Sort descending (Newest first)
+                        data.sort((a: any, b: any) =>
+                            new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime()
+                        );
 
                         this.tickets.set(data);
                         this.totalTickets = data.length;
@@ -91,24 +90,29 @@ export class TicketsCerradosComponent implements OnInit {
                         this.errorMsg.set(resp?.message || 'No se pudieron cargar los tickets.');
                     }
                 },
-                error: () => {
-                    this.errorMsg.set('Error de conexión con el servidor.');
+                error: (err: any) => {
+                    // Capture backend error message
+                    const msg = err.error?.message || 'Error de conexión con el servidor.';
+                    this.errorMsg.set(msg);
+                    console.error('API Error:', err);
                 }
             });
     }
 
     // ============================
-    // NAVEGACIÓN
+    // ACTIONS
     // ============================
-    verDetalle(ticket_id: number): void {
-        if (!this.usuario) this.cargarUsuario();
+    viewDetail(ticket_id: number): void {
+        if (!this.user) this.loadUser();
 
-        if (!this.usuario || !this.usuario.nombre_rol) {
+        const role = this.user?.nombre_rol || this.user?.rol || '';
+
+        if (!role) {
             console.error('No se pudo determinar el rol del usuario');
             return;
         }
 
-        if (this.usuario.nombre_rol === 'administrador') {
+        if (role === 'administrador') {
             this.router.navigate(['/admin/ticket', ticket_id]);
         } else {
             this.router.navigate(['/soporte/ticket', ticket_id]);
@@ -116,62 +120,65 @@ export class TicketsCerradosComponent implements OnInit {
     }
 
     // ============================
-    // LÓGICA DE FILTRADO
+    // FILTER LOGIC
     // ============================
     getFilteredTickets() {
-        const search = this.filtroBusqueda.toLowerCase().trim();
-        const origen = this.filtroOrigen.toLowerCase();
-        const evento = this.filtroEvento.toLowerCase();
+        const search = this.filterSearch.toLowerCase().trim();
+        const origin = this.filterOrigin.toLowerCase();
+        const event = this.filterEvent.toLowerCase();
 
         return this.tickets().filter(t => {
-            // 1. Busqueda Texto (ID, Asunto, Usuario)
+            // 1. Search (ID, Subject, User)
             const matchSearch = !search ||
                 t.ticket_id.toString().includes(search) ||
-                t.asunto.toLowerCase().includes(search) ||
-                t.usuario_nombre.toLowerCase().includes(search);
+                (t.asunto && t.asunto.toLowerCase().includes(search)) ||
+                (t.usuario_nombre && t.usuario_nombre.toLowerCase().includes(search));
 
-            // 2. Origen
-            const matchOrigen = origen === 'todos' || t.origen.toLowerCase() === origen;
+            // 2. Origin
+            const matchOrigin = origin === 'todos' || (t.origen && t.origen.toLowerCase() === origin);
 
-            // 3. Evento
-            const matchEvento = evento === 'todos' || t.evento.toLowerCase() === evento;
+            // 3. Event
+            const matchEvent = event === 'todos' || (t.evento && t.evento.toLowerCase() === event);
 
-            // 4. Fechas
-            const fechaTicket = new Date(t.fecha_creacion);
-            const matchDesde = !this.filtroFechaDesde || fechaTicket >= new Date(this.filtroFechaDesde);
+            // 4. Dates
+            const ticketDate = new Date(t.fecha_creacion);
+            const matchFrom = !this.filterDateFrom || ticketDate >= new Date(this.filterDateFrom);
 
-            // Ajuste para incluir todo el día final
-            const fechaHastaFin = this.filtroFechaHasta ? new Date(this.filtroFechaHasta + 'T23:59:59') : null;
-            const matchHasta = !fechaHastaFin || fechaTicket <= fechaHastaFin;
+            // Include the whole end day
+            const matchTo = !this.filterDateTo || ticketDate <= new Date(this.filterDateTo + 'T23:59:59');
 
-            return matchSearch && matchOrigen && matchEvento && matchDesde && matchHasta;
+            return matchSearch && matchOrigin && matchEvent && matchFrom && matchTo;
         });
     }
 
-    // Métodos disparados por el HTML (ngModelChange) para resetear paginación al filtrar
-    onFiltroBusquedaChange(val: string) { this.filtroBusqueda = val; this.currentPage = 1; }
-    onFiltroOrigenChange(val: string) { this.filtroOrigen = val; this.currentPage = 1; }
-    onFiltroEventoChange(val: string) { this.filtroEvento = val; this.currentPage = 1; }
-    onFiltroFechaDesdeChange(val: string) { this.filtroFechaDesde = val; this.currentPage = 1; }
-    onFiltroFechaHastaChange(val: string) { this.filtroFechaHasta = val; this.currentPage = 1; }
-
-    resetFiltros() {
-        this.filtroBusqueda = '';
-        this.filtroOrigen = 'todos';
-        this.filtroEvento = 'todos';
-        this.filtroFechaDesde = '';
-        this.filtroFechaHasta = '';
+    resetFilters() {
+        this.filterSearch = '';
+        this.filterOrigin = 'todos';
+        this.filterEvent = 'todos';
+        this.filterDateFrom = '';
+        this.filterDateTo = '';
         this.currentPage = 1;
     }
 
+    // Event Handlers for HTML (Updates signals/vars and resets pagination)
+    onFilterSearchChange(val: string) { this.filterSearch = val; this.currentPage = 1; }
+    onFilterOriginChange(val: string) { this.filterOrigin = val; this.currentPage = 1; }
+    onFilterEventoChange(val: string) { this.filterEvent = val; this.currentPage = 1; }
+    onFiltroFechaDesdeChange(val: string) { this.filterDateFrom = val; this.currentPage = 1; }
+    onFiltroFechaHastaChange(val: string) { this.filterDateTo = val; this.currentPage = 1; }
+
     // ============================
-    // PAGINACIÓN
+    // PAGINATION
     // ============================
     getPaginatedTickets() {
         const filtered = this.getFilteredTickets();
-        // Actualizamos el total basado en el filtro actual, no el total global
-        // Nota: totalTickets lo usas para el header global, aquí calculamos para paginar
+        // Update total based on current filters for pagination calculation
         const totalFiltered = filtered.length;
+
+        // Reset page if out of bounds
+        if (this.currentPage > Math.ceil(totalFiltered / this.itemsPerPage) && this.currentPage > 1) {
+            this.currentPage = 1;
+        }
 
         const start = (this.currentPage - 1) * this.itemsPerPage;
         return filtered.slice(start, start + this.itemsPerPage);
@@ -219,8 +226,27 @@ export class TicketsCerradosComponent implements OnInit {
         this.currentPage = 1;
     }
 
-    // Optimización de rendimiento para ngFor
+    // Helpers
+    getStartIndex(): number {
+        return (this.currentPage - 1) * this.itemsPerPage;
+    }
+
+    getEndIndex(): number {
+        const total = this.getFilteredTickets().length;
+        return Math.min(this.currentPage * this.itemsPerPage, total);
+    }
+
     trackByTicketId(index: number, ticket: any): number {
         return ticket.ticket_id;
+    }
+
+    getStatusClass(estado: string) {
+        if (!estado) return 'bg-slate-100 text-slate-600 border-slate-200';
+        const e = estado.toLowerCase();
+        if (e === 'abierto') return 'bg-blue-50 text-blue-700 border-blue-200';
+        if (e.includes('proceso')) return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+        if (e === 'cerrado') return 'bg-green-50 text-green-700 border-green-200';
+        if (e === 'cancelado') return 'bg-red-50 text-red-700 border-red-200';
+        return 'bg-slate-100 text-slate-600 border-slate-200';
     }
 }

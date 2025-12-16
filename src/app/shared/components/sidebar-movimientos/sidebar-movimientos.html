@@ -1,30 +1,33 @@
-<aside [class.w-72]="isOpen()" [class.w-14]="!isOpen()"
-    class="bg-[#001b55] text-white flex flex-col h-full border-l border-white/5 shadow-2xl transition-all duration-300 ease-in-out relative overflow-hidden">
+<aside [class.w-80]="isOpen()" [class.w-16]="!isOpen()"
+    class="bg-[#002777] text-white flex flex-col h-full border-l border-white/10 shadow-2xl transition-all duration-300 ease-in-out relative overflow-hidden z-30">
 
     <header
-        class="px-3 py-4 border-b border-white/10 bg-[#002777]/50 backdrop-blur-sm flex items-center justify-between sticky top-0 z-10 h-[60px]">
+        class="px-4 py-4 border-b border-white/10 bg-[#002777] flex items-center justify-between sticky top-0 z-20 h-[64px] shadow-sm shadow-black/10">
 
-        <div class="flex-1 overflow-hidden transition-opacity duration-200" [class.opacity-0]="!isOpen()"
-            [class.hidden]="!isOpen()">
+        <div class="flex-1 overflow-hidden transition-all duration-300" [class.opacity-0]="!isOpen()"
+            [class.translate-x-[-10px]]="!isOpen()" [class.hidden]="!isOpen()">
+
             <h3 class="text-sm font-bold text-white tracking-wide flex items-center gap-2 whitespace-nowrap">
-                <svg class="w-4 h-4 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Actividad
+                <div class="bg-white/10 p-1.5 rounded-lg">
+                    <svg class="w-4 h-4 text-[#62CEEA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                </div>
+                Bitácora
             </h3>
 
             @if (!loading()) {
-            <p class="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap truncate">Monitoreando tickets</p>
+            <p class="text-[10px] text-slate-300 mt-0.5 whitespace-nowrap pl-1">Actividad reciente</p>
             }
             @if (loading()) {
-            <p class="text-[10px] text-[#62CEEA] mt-0.5 animate-pulse whitespace-nowrap">Actualizando...</p>
+            <p class="text-[10px] text-[#62CEEA] mt-0.5 animate-pulse whitespace-nowrap pl-1">Sincronizando...</p>
             }
         </div>
 
         <button (click)="toggleSidebar()"
-            class="p-1.5 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-colors focus:outline-none"
-            [title]="isOpen() ? 'Ocultar panel' : 'Mostrar panel'">
+            class="p-2 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-all focus:outline-none active:scale-95"
+            [title]="isOpen() ? 'Contraer' : 'Expandir'">
 
             <svg [class.rotate-180]="!isOpen()" class="w-5 h-5 transition-transform duration-300" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
@@ -34,90 +37,102 @@
     </header>
 
     @if (!isOpen()) {
-    <div class="absolute top-[70px] left-0 w-full flex flex-col items-center gap-4 py-4 animate-fade-in">
-        <div class="relative flex h-3 w-3" title="Estado del sistema">
+    <div class="absolute top-[80px] left-0 w-full flex flex-col items-center gap-6 py-4 animate-fade-in">
+        <div class="relative flex h-3 w-3" title="Estado">
             @if (!errorMsg()) {
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#62CEEA] opacity-75"></span>
             }
-            <span [ngClass]="errorMsg() ? 'bg-red-500' : 'bg-emerald-500'"
-                class="relative inline-flex rounded-full h-3 w-3"></span>
+            <span [ngClass]="errorMsg() ? 'bg-red-500' : 'bg-[#62CEEA]'"
+                class="relative inline-flex rounded-full h-3 w-3 border border-[#002777]"></span>
         </div>
 
+        <div class="w-1 h-1 rounded-full bg-white/20"></div>
+        <div class="w-1 h-1 rounded-full bg-white/20"></div>
+        <div class="w-1 h-1 rounded-full bg-white/20"></div>
+
         @if (errorMsg()) {
-        <svg class="w-5 h-5 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-5 h-5 text-red-500 animate-pulse mt-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
         }
     </div>
     }
 
     @if (isOpen() && errorMsg()) {
-    <div class="px-4 py-3 bg-red-900/20 border-b border-red-500/20 animate-fade-in">
-        <div class="flex items-start gap-2">
+    <div class="m-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl animate-fade-in backdrop-blur-sm">
+        <div class="flex items-start gap-3">
             <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p class="text-[10px] text-red-200 leading-tight">{{ errorMsg() }}</p>
+            <p class="text-xs text-red-200 leading-relaxed">{{ errorMsg() }}</p>
         </div>
     </div>
     }
 
-    <section class="flex-1 overflow-y-auto custom-scrollbar p-4 transition-opacity duration-200"
+    <section class="flex-1 overflow-y-auto custom-scrollbar p-5 transition-opacity duration-300"
         [class.opacity-0]="!isOpen()" [class.invisible]="!isOpen()">
 
         @if (movimientos().length === 0 && !loading() && !errorMsg()) {
-        <div class="flex flex-col items-center justify-center h-32 text-center opacity-50">
-            <svg class="w-8 h-8 text-slate-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-            </svg>
-            <p class="text-xs text-slate-400">Sin actividad reciente</p>
+        <div class="flex flex-col items-center justify-center h-48 text-center opacity-40">
+            <div class="bg-white/5 p-4 rounded-full mb-3">
+                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <p class="text-xs text-slate-300">Sin movimientos registrados</p>
         </div>
         }
 
-        <div class="space-y-6 relative border-l-2 border-white/10 ml-2.5">
+        <div class="space-y-6 relative border-l-2 border-white/10 ml-3 pb-10">
 
             @for (m of movimientos(); track m.ticket_movimiento_id) {
-            <article class="relative pl-6 group animate-slide-in">
-
-                <button (click)="cerrarTarjeta(m.ticket_movimiento_id)"
-                    class="absolute top-0 right-0 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1 cursor-pointer z-10">
-                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+            <article class="relative pl-6 animate-slide-in">
 
                 <div
-                    class="absolute -left-[9px] top-0 bg-[#001b55] p-1 rounded-full border border-slate-600 group-hover:border-[#62CEEA] transition-colors">
-                    <div [innerHTML]="getIconForType(m.tipo_movimiento)" class="w-3 h-3 text-[#62CEEA]"></div>
+                    class="absolute -left-[9px] top-4 bg-[#002777] p-1 rounded-full border-2 border-[#62CEEA] z-10 shadow-[0_0_10px_rgba(98,206,234,0.3)]">
+                    <div class="w-2 h-2 rounded-full bg-[#62CEEA]"></div>
                 </div>
 
-                <div class="flex flex-col">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="bg-white/10 px-1.5 py-0.5 rounded text-[10px] font-mono text-[#62CEEA]">
-                            #{{ m.ticket_id }}
-                        </span>
-                        <span class="text-xs font-bold text-white truncate max-w-[140px]"
-                            [title]="formatoTipoMovimiento(m.tipo_movimiento)">
-                            {{ formatoTipoMovimiento(m.tipo_movimiento) }}
+                <div
+                    class="bg-white/5 border border-white/5 rounded-xl p-3.5 hover:bg-white/10 transition-colors duration-200 group">
+
+                    <div class="flex justify-between items-start gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="bg-[#62CEEA]/10 text-[#62CEEA] px-2 py-0.5 rounded text-[10px] font-mono border border-[#62CEEA]/20 font-bold">
+                                #{{ m.ticket_id }}
+                            </span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-mono whitespace-nowrap">
+                            {{ m.fecha | date:'HH:mm' }}
                         </span>
                     </div>
 
-                    <p class="text-[11px] text-slate-300 truncate">
-                        <span class="text-slate-500">Por:</span> {{ m.nombre_completo }}
-                    </p>
+                    <div class="mb-2">
+                        <h4 class="text-xs font-bold text-white mb-0.5"
+                            [title]="formatoTipoMovimiento(m.tipo_movimiento)">
+                            {{ formatoTipoMovimiento(m.tipo_movimiento) }}
+                        </h4>
+                        <p class="text-[11px] text-slate-300">
+                            {{ m.nombre_completo }}
+                        </p>
+                    </div>
 
-                    <p class="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="flex items-center gap-1.5 pt-2 border-t border-white/5">
+                        <svg class="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        {{ m.fecha | date:'shortTime' }} · {{ m.fecha | date:'dd/MM' }}
-                    </p>
+                        <span class="text-[10px] text-slate-400 capitalize">
+                            {{ m.fecha | date:'EEEE dd, MMM' }}
+                        </span>
+                    </div>
                 </div>
+
             </article>
             }
         </div>

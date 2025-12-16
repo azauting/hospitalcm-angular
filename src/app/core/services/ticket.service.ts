@@ -205,4 +205,7 @@ export class TicketService {
             { withCredentials: true }
         );
     }
+    getMyIp() {
+        return this.http.get<any>(`${this.apiUrl}/api/my-ip`);
+    }
 }

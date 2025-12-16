@@ -83,10 +83,10 @@
                 </svg>
                 <div *ngIf="!isOpen()"
                     class="absolute left-14 bg-[#001b55] text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg border border-white/10 font-medium">
-                    Crear Ticket</div>
+                    Crear</div>
                 <span class="font-medium text-sm ml-3 whitespace-nowrap transition-all duration-300 block"
                     [class.opacity-0]="!isOpen()" [class.translate-x-4]="!isOpen()" [class.w-0]="!isOpen()">Crear
-                    Ticket</span>
+                    </span>
             </button>
 
             <button (click)="goTicketsSinRevisar()"
@@ -130,7 +130,7 @@
                     class="absolute left-14 bg-[#001b55] text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg border border-white/10 font-medium">
                     Cerrados</div>
                 <span class="font-medium text-sm ml-3 whitespace-nowrap transition-all duration-300 block"
-                    [class.opacity-0]="!isOpen()" [class.translate-x-4]="!isOpen()" [class.w-0]="!isOpen()">Tickets
+                    [class.opacity-0]="!isOpen()" [class.translate-x-4]="!isOpen()" [class.w-0]="!isOpen()">
                     Cerrados</span>
             </button>
 
@@ -151,8 +151,8 @@
                     class="absolute left-14 bg-[#001b55] text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg border border-white/10 font-medium">
                     Usuarios</div>
                 <span class="font-medium text-sm ml-3 whitespace-nowrap transition-all duration-300 block"
-                    [class.opacity-0]="!isOpen()" [class.translate-x-4]="!isOpen()"
-                    [class.w-0]="!isOpen()">Crear usuario</span>
+                    [class.opacity-0]="!isOpen()" [class.translate-x-4]="!isOpen()" [class.w-0]="!isOpen()">Crear
+                    usuario</span>
             </button>
 
             <button (click)="goUsuarios()"
@@ -255,6 +255,21 @@
                 <span class="font-medium text-sm ml-3 whitespace-nowrap transition-all duration-300 block"
                     [class.opacity-0]="!isOpen()" [class.translate-x-4]="!isOpen()" [class.w-0]="!isOpen()">Mis Tickets
                     Asignados</span>
+            </button>
+
+            <button (click)="goTicketsCerrados()"
+                class="w-full flex items-center relative px-3 py-3 rounded-xl transition-all duration-200 group overflow-hidden"
+                [class]="getNavButtonClass('/admin/tickets/cerrados')">
+                <svg class="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <div *ngIf="!isOpen()"
+                    class="absolute left-14 bg-[#001b55] text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg border border-white/10 font-medium">
+                    Cerrados</div>
+                <span class="font-medium text-sm ml-3 whitespace-nowrap transition-all duration-300 block"
+                    [class.opacity-0]="!isOpen()" [class.translate-x-4]="!isOpen()" [class.w-0]="!isOpen()">Tickets
+                    Cerrados</span>
             </button>
 
             <div class="px-3 overflow-hidden transition-all duration-300 whitespace-nowrap" [class.h-0]="!isOpen()"

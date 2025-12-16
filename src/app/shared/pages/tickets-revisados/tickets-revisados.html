@@ -7,7 +7,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#002777]" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
             <div>
@@ -38,7 +38,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 px-6 py-4">
         <div class="flex flex-col lg:flex-row gap-4 items-end">
             <div class="flex-1 w-full">
-                <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Buscar Ticket</label>
+                <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Buscar</label>
                 <div class="relative">
                     <input type="text" [(ngModel)]="filterSearch" placeholder="Buscar por asunto, ID o descripción..."
                         class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-[#002777] focus:ring-1 focus:ring-[#002777] text-sm transition-all">
@@ -49,16 +49,23 @@
                     </svg>
                 </div>
             </div>
-            <div class="w-full lg:w-48">
-                <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">
-                    Estado
-                </label>
+            <div class="w-full lg:w-40">
+                <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Origen</label>
+                <select [(ngModel)]="filterOrigin"
+                    class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-[#002777] outline-none bg-white cursor-pointer">
+                    <option value="todos">Todos</option>
+                    <option value="solicitante">Solicitante</option>
+                    <option value="soporte">Soporte</option>
+                    <option value="administrador">Admin</option>
+                </select>
+            </div>
+            <div class="w-full lg:w-40">
+                <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Estado</label>
                 <select [(ngModel)]="filterStatus"
-                    class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-[#002777] outline-none bg-white">
+                    class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-[#002777] outline-none bg-white cursor-pointer">
                     <option value="todos">Todos</option>
                     <option value="abierto">Abierto</option>
                     <option value="en proceso">En proceso</option>
-                    <option value="en_proceso">En proceso</option>
                     <option value="cerrado">Cerrado</option>
                     <option value="cancelado">Cancelado</option>
                 </select>
@@ -77,7 +84,7 @@
             </div>
 
             <button (click)="resetFilters()"
-                class="px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors h-[42px] border border-transparent hover:border-red-100">
+                class="px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors h-[42px] border border-transparent hover:border-red-100 whitespace-nowrap">
                 Limpiar
             </button>
         </div>
@@ -85,7 +92,7 @@
 
     <div *ngIf="loading()" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 border-4 border-[#62CEEA]/30 border-t-[#002777] rounded-full animate-spin"></div>
-        <p class="mt-4 text-sm font-medium text-[#002777] animate-pulse">Organizando tablero...</p>
+        <p class="mt-4 text-sm font-medium text-[#002777] animate-pulse">Cargando tickets...</p>
     </div>
 
     <div *ngIf="!loading() && errorMsg()" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
@@ -94,185 +101,140 @@
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
-            <h3 class="text-sm font-medium text-red-800">Error de conexión</h3>
+            <h3 class="text-sm font-medium text-red-800">No se encontraron tickets disponibles</h3>
             <p class="text-sm text-red-600 mt-1">{{ errorMsg() }}</p>
         </div>
     </div>
 
     <div *ngIf="!loading() && !errorMsg() && tickets().length > 0"
-        class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        class="bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
 
-        <div class="bg-red-50/50 rounded-2xl border border-red-100 p-4 flex flex-col gap-4">
-            <div class="flex items-center justify-between pb-3 border-b border-red-200/60 mb-1">
-                <div class="flex items-center gap-2">
-                    <div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm shadow-red-500/50"></div>
-                    <h3 class="font-bold text-red-800 uppercase text-xs tracking-widest">Alta Prioridad</h3>
-                </div>
-                <span
-                    class="text-xs font-bold bg-white text-red-600 px-2.5 py-0.5 rounded-full border border-red-100 shadow-sm">
-                    {{ getTicketsByPriority('alta').length }}
-                </span>
-            </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr
+                        class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                        <th class="px-6 py-4">Asignado a</th>
+                        <th class="px-6 py-4 w-1/3">Asunto</th>
+                        <th class="px-6 py-4">Prioridad</th>
+                        <th class="px-6 py-4">Origen</th>
+                        <th class="px-6 py-4 text-center">Estado</th>
+                        <th class="px-6 py-4">Fecha Creación</th>
+                        <th class="px-6 py-4 text-right">Acción</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr *ngFor="let t of getPaginatedTickets()" (click)="viewDetail(t.ticket_id)"
+                        class="group hover:bg-blue-50/50 transition-colors duration-200 cursor-pointer">
+                        <td class="px-6 py-4 align-top">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm ring-2 ring-white"
+                                    [ngClass]="t.soporte_asignado_nombre ? 'bg-[#002777]' : 'bg-slate-300'">
+                                    {{ t.soporte_asignado_nombre ? t.soporte_asignado_nombre.charAt(0) : '?' }}
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-medium text-slate-700">
+                                        {{ t.soporte_asignado_nombre || 'Sin asignar' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 align-top">
+                            <h4 class="text-sm font-bold text-slate-800 group-hover:text-[#002777] mb-1 line-clamp-2">
+                                {{ t.asunto }}
+                            </h4>
+                        </td>
 
-            <div *ngFor="let t of getTicketsByPriority('alta')" (click)="viewDetail(t.ticket_id)"
-                class="group bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-red-300 hover:-translate-y-1 transition-all duration-200 cursor-pointer relative overflow-hidden">
 
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
+                        <td class="px-6 py-4 align-top">
+                            <span
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border"
+                                [ngClass]="getPriorityClass(t.prioridad)">
+                                <span class="w-1.5 h-1.5 rounded-full bg-current opacity-75"></span>
+                                {{ t.prioridad | uppercase }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 align-top">
+                            <span
+                                class="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase border"
+                                [ngClass]="{
+                                    'bg-blue-50 text-blue-700 border-blue-100': t.origen === 'solicitante',
+                                    'bg-purple-50 text-purple-700 border-purple-100': t.origen === 'soporte',
+                                    'bg-orange-50 text-orange-700 border-orange-100': t.origen === 'administrador'
+                                }">
+                                {{ t.origen || 'N/A' }}
+                            </span>
+                        </td>
 
-                <div class="flex justify-between items-start mb-2 pl-2">
-                    <span class="text-xs font-mono font-bold text-slate-400">#{{ t.ticket_id }}</span>
-                    <span
-                        class="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                        {{ t.fecha_creacion | date:'dd/MM HH:mm' }}
-                    </span>
-                </div>
+                        <td class="px-6 py-4 align-top text-center">
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border"
+                                [ngClass]="getStatusClass(t.estado)">
+                                {{ t.estado }}
+                            </span>
+                        </td>
 
-                <div class="pl-2 mb-3">
-                    <h4
-                        class="text-sm font-bold text-slate-800 leading-tight mb-1 group-hover:text-[#002777] transition-colors line-clamp-2">
-                        {{ t.asunto }}
-                    </h4>
-                    <p class="text-xs text-slate-500 line-clamp-2">{{ t.descripcion }}</p>
-                </div>
+                        <td class="px-6 py-4 align-top">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-slate-400 mt-1">{{ t.fecha_creacion | date:'dd/MM/yyyy'
+                                    }}</span>
+                                <span class="text-[10px] text-slate-400">{{ t.fecha_creacion | date:'HH:mm' }}
+                                    hrs</span>
+                            </div>
+                        </td>
 
-                <div class="pl-2 flex items-center justify-between border-t border-slate-50 pt-3 mt-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
-                            [ngClass]="t.soporte_asignado_nombre ? 'bg-[#002777]' : 'bg-slate-300'">
-                            {{ t.soporte_asignado_nombre ? t.soporte_asignado_nombre.charAt(0) : '?' }}
-                        </div>
-                        <span class="text-xs font-medium truncate max-w-[100px]"
-                            [ngClass]="t.soporte_asignado_nombre ? 'text-slate-700' : 'text-slate-400 italic'">
-                            {{ t.soporte_asignado_nombre || 'Sin asignar' }}
-                        </span>
-                    </div>
-                    <span
-                        class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                        {{ t.estado }}
-                    </span>
-                </div>
-            </div>
-
-            <div *ngIf="getTicketsByPriority('alta').length === 0"
-                class="text-center py-8 border-2 border-dashed border-red-100 rounded-xl">
-                <p class="text-xs text-red-300 font-bold uppercase">Sin tickets urgentes</p>
-            </div>
+                        <td class="px-6 py-4 align-middle text-right">
+                            <button
+                                class="text-slate-400 hover:text-[#002777] hover:bg-blue-100 p-2 rounded-full transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <div class="bg-orange-50/50 rounded-2xl border border-orange-100 p-4 flex flex-col gap-4">
-            <div class="flex items-center justify-between pb-3 border-b border-orange-200/60 mb-1">
-                <div class="flex items-center gap-2">
-                    <div class="w-2.5 h-2.5 rounded-full bg-orange-400 shadow-sm shadow-orange-400/50"></div>
-                    <h3 class="font-bold text-orange-800 uppercase text-xs tracking-widest">Media Prioridad</h3>
-                </div>
-                <span
-                    class="text-xs font-bold bg-white text-orange-600 px-2.5 py-0.5 rounded-full border border-orange-100 shadow-sm">
-                    {{ getTicketsByPriority('media').length }}
-                </span>
+        <div
+            class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+            <div class="text-xs text-slate-500 font-medium">
+                Mostrando <span class="font-bold text-slate-700">{{ getStartIndex() + 1 }}</span>
+                a <span class="font-bold text-slate-700">{{ getEndIndex() }}</span>
+                de <span class="font-bold text-slate-700">{{ totalTickets }}</span> registros
             </div>
 
-            <div *ngFor="let t of getTicketsByPriority('media')" (click)="viewDetail(t.ticket_id)"
-                class="group bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-300 hover:-translate-y-1 transition-all duration-200 cursor-pointer relative overflow-hidden">
+            <div class="flex items-center gap-2">
+                <button (click)="previousPage()" [disabled]="currentPage === 1"
+                    class="p-2 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-[#002777] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
 
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-orange-400"></div>
-
-                <div class="flex justify-between items-start mb-2 pl-2">
-                    <span class="text-xs font-mono font-bold text-slate-400">#{{ t.ticket_id }}</span>
-                    <span
-                        class="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                        {{ t.fecha_creacion | date:'dd/MM HH:mm' }}
-                    </span>
+                <div class="hidden sm:flex items-center gap-1">
+                    <ng-container *ngFor="let page of getPageNumbers()">
+                        <button *ngIf="page !== -1" (click)="goToPage(page)"
+                            class="w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center border"
+                            [ngClass]="currentPage === page 
+                                ? 'bg-[#002777] text-white border-[#002777] shadow-md shadow-blue-900/20' 
+                                : 'bg-white text-slate-600 border-slate-200 hover:border-[#002777] hover:text-[#002777]'">
+                            {{ page }}
+                        </button>
+                        <span *ngIf="page === -1" class="w-8 text-center text-slate-400">...</span>
+                    </ng-container>
                 </div>
 
-                <div class="pl-2 mb-3">
-                    <h4
-                        class="text-sm font-bold text-slate-800 leading-tight mb-1 group-hover:text-[#002777] transition-colors line-clamp-2">
-                        {{ t.asunto }}
-                    </h4>
-                    <p class="text-xs text-slate-500 line-clamp-2">{{ t.descripcion }}</p>
-                </div>
-
-                <div class="pl-2 flex items-center justify-between border-t border-slate-50 pt-3 mt-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
-                            [ngClass]="t.soporte_asignado_nombre ? 'bg-[#002777]' : 'bg-slate-300'">
-                            {{ t.soporte_asignado_nombre ? t.soporte_asignado_nombre.charAt(0) : '?' }}
-                        </div>
-                        <span class="text-xs font-medium truncate max-w-[100px]"
-                            [ngClass]="t.soporte_asignado_nombre ? 'text-slate-700' : 'text-slate-400 italic'">
-                            {{ t.soporte_asignado_nombre || 'Sin asignar' }}
-                        </span>
-                    </div>
-                    <span
-                        class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                        {{ t.estado }}
-                    </span>
-                </div>
-            </div>
-
-            <div *ngIf="getTicketsByPriority('media').length === 0"
-                class="text-center py-8 border-2 border-dashed border-orange-100 rounded-xl">
-                <p class="text-xs text-orange-300 font-bold uppercase">Sin tickets pendientes</p>
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                    class="p-2 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-[#002777] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
             </div>
         </div>
-
-        <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 flex flex-col gap-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-1">
-                <div class="flex items-center gap-2">
-                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></div>
-                    <h3 class="font-bold text-slate-700 uppercase text-xs tracking-widest">Baja Prioridad</h3>
-                </div>
-                <span
-                    class="text-xs font-bold bg-white text-emerald-600 px-2.5 py-0.5 rounded-full border border-slate-200 shadow-sm">
-                    {{ getTicketsByPriority('baja').length }}
-                </span>
-            </div>
-
-            <div *ngFor="let t of getTicketsByPriority('baja')" (click)="viewDetail(t.ticket_id)"
-                class="group bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-emerald-400 hover:-translate-y-1 transition-all duration-200 cursor-pointer relative overflow-hidden">
-
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
-
-                <div class="flex justify-between items-start mb-2 pl-2">
-                    <span class="text-xs font-mono font-bold text-slate-400">#{{ t.ticket_id }}</span>
-                    <span
-                        class="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                        {{ t.fecha_creacion | date:'dd/MM HH:mm' }}
-                    </span>
-                </div>
-
-                <div class="pl-2 mb-3">
-                    <h4
-                        class="text-sm font-bold text-slate-800 leading-tight mb-1 group-hover:text-[#002777] transition-colors line-clamp-2">
-                        {{ t.asunto }}
-                    </h4>
-                    <p class="text-xs text-slate-500 line-clamp-2">{{ t.descripcion }}</p>
-                </div>
-
-                <div class="pl-2 flex items-center justify-between border-t border-slate-50 pt-3 mt-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
-                            [ngClass]="t.soporte_asignado_nombre ? 'bg-[#002777]' : 'bg-slate-300'">
-                            {{ t.soporte_asignado_nombre ? t.soporte_asignado_nombre.charAt(0) : '?' }}
-                        </div>
-                        <span class="text-xs font-medium truncate max-w-[100px]"
-                            [ngClass]="t.soporte_asignado_nombre ? 'text-slate-700' : 'text-slate-400 italic'">
-                            {{ t.soporte_asignado_nombre || 'Sin asignar' }}
-                        </span>
-                    </div>
-                    <span
-                        class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                        {{ t.estado }}
-                    </span>
-                </div>
-            </div>
-
-            <div *ngIf="getTicketsByPriority('baja').length === 0"
-                class="text-center py-8 border-2 border-dashed border-slate-200 rounded-xl">
-                <p class="text-xs text-slate-400 font-bold uppercase">Sin tickets pendientes</p>
-            </div>
-        </div>
-
     </div>
 
     <div *ngIf="!loading() && !errorMsg() && tickets().length === 0"
@@ -284,8 +246,8 @@
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
         </div>
-        <h3 class="text-lg font-bold text-slate-700">No hay tickets asignables</h3>
-        <p class="text-slate-500 mt-2">Tu unidad está al día con las revisiones.</p>
+        <h3 class="text-lg font-bold text-slate-700">No hay tickets disponibles</h3>
+        <p class="text-slate-500 mt-2">No se encontraron tickets revisados para mostrar.</p>
     </div>
 
 </div>
