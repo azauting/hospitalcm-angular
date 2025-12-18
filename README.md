@@ -1,59 +1,73 @@
-# HospitalSoporte
+# Gestion de incidencias TI
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.0.
+## Estructura Principal del Proyecto (`src/app`)
 
-## Development server
+Para mantener el orden, la estructura del codigo fue hecha de la siguiente forma
 
-To start a local development server, run:
+* **`core/`**: Aqui están los servicios que conectan con la API 
+* **`features/`**: Contenido dividido por el rol del usuario
+* `admin/`: Gestion de usuarios, unidades y dashboards
+* `solicitante/`: Vistas para personal médico (crear requerimientos)
+* `soporte/`: Vistas para técnicos que resuelven los tickets
+
+
+* **`layouts/`**: Estructuras visuales base para cada rol
+* **`shared/`**: Componentes reutilizables (Sidebar, Navbar) y páginas comunes como el detalle de un ticket
+* **`auth/`**: Todo el flujo de inicio de sesión
+
+---
+
+
+## Comandos de Desarrollo 
+
+### Iniciar servidor local
 
 ```bash
 bun ng serve
+
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Entra a `http://localhost:4200/`. La app se recarga sola al guardar cambios.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Generar nuevos componentes
 
 ```bash
-bun ng generate component component-name
+bun ng generate component nombre-del-componente
+
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+### Compilar para producción
 
 ```bash
 bun ng build
+
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## Que se puede hacer
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+* se puede explicar un paso a paso de como se debe instalar
+* explicar flujos importantes
+* roles
+* etc
+* Al final que se entiendas los flujos principales de cada rol en la explicacion con la funciones etc
 
-```bash
-bun ng test
-```
 
-## Running end-to-end tests
+1. **Configuracion inicial:**
+* Instala Bun en tu equipo si no lo tienes.
+* Ejecuta `bun install` para descargar las dependencias.
 
-For end-to-end (e2e) testing, run:
 
-```bash
-bun ng e2e
-```
+2. **Variables de entorno:**
+* Revisa `src/environments/environment.ts` y asegúrate de que la URL de la API apunte a tu servidor local de backend
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
-## Additional Resources
+3. **Exploracion de rutas:**
+* Abre `src/app/app.routes.ts` para entender cómo están conectadas las páginas de Admin, Soporte y Solicitante
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+4. **Estilos:**
+* Estamos usando **Tailwind CSS**. Antes de crear estilos nuevos, revisa si puedes usar clases existentes en el HTML para mantener la consistencia
+
+
