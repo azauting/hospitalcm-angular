@@ -71,3 +71,24 @@ bun ng build
 * Estamos usando **Tailwind CSS**. Antes de crear estilos nuevos, revisa si puedes usar clases existentes en el HTML para mantener la consistencia
 
 
+
+
+## Ubicación de cada "spec.ts"
+
+- app.spec.ts:
+\hospitalcm-angular-main\hospitalcm-angular-main\src\app\app.spec.ts
+
+- dashboard.spec.ts:
+\hospitalcm-angular-main\hospitalcm-angular-main\src\app\features\admin\pages\dashboard\dashboard.spec.ts
+
+- general-tab.spec.ts:
+\hospitalcm-angular-main\hospitalcm-angular-main\src\app\features\admin\pages\dashboard\tabs\general-tab\general-tab.spec.ts
+
+- crear-ticket.spec.ts:
+\hospitalcm-angular-main\hospitalcm-angular-main\src\app\shared\pages\crear-ticket\crear-ticket.spec.ts
+
+* Para correr las pruebas en la consola:
+
+1. El sistema debe estar corriendo (api, BD y front).
+2. Abrir una terminal y posicionarte en la raíz del front.
+3. Ingresa el comando: ng test --watch=false
